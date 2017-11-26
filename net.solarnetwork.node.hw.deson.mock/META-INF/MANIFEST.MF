@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Deson Electric Hardware Support
-Bundle-SymbolicName: net.solarnetwork.node.hw.deson
+Bundle-SymbolicName: net.solarnetwork.node.hw.deson.mock
 Bundle-Description: Hardware support for Deson Electric devices.
 Bundle-Version: 1.5.0
 Bundle-Vendor: SolarNetwork
