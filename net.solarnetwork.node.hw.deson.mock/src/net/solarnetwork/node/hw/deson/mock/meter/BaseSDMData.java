@@ -20,10 +20,11 @@
  * ==================================================================
  */
 
-package net.solarnetwork.node.hw.deson.meter.mock;
+package net.solarnetwork.node.hw.deson.mock.meter;
 
 import java.util.Arrays;
 import java.util.Map;
+
 import gnu.trove.map.hash.TIntIntHashMap;
 import net.solarnetwork.node.io.modbus.ModbusConnection;
 import net.solarnetwork.node.io.modbus.ModbusHelper;
@@ -62,12 +63,12 @@ public abstract class BaseSDMData implements SDMData {
 	 * Construct with backwards setting.
 	 * 
 	 * @param backwards
-	 *        If {@code true} then treat the meter as being installed backwards
-	 *        with respect to the current direction. In this case certain
-	 *        instantaneous measurements will be negated and certain
-	 *        accumulating properties will be switched (like {@code wattHours}
-	 *        and {@code wattHoursReverse}) when
-	 *        {@link SDMData#populateMeasurements} is called.
+	 *            If {@code true} then treat the meter as being installed
+	 *            backwards with respect to the current direction. In this case
+	 *            certain instantaneous measurements will be negated and certain
+	 *            accumulating properties will be switched (like
+	 *            {@code wattHours} and {@code wattHoursReverse}) when
+	 *            {@link SDMData#populateMeasurements} is called.
 	 */
 	public BaseSDMData(boolean backwards) {
 		super();
@@ -80,7 +81,7 @@ public abstract class BaseSDMData implements SDMData {
 	 * Copy constructor.
 	 * 
 	 * @param other
-	 *        the object to copy
+	 *            the object to copy
 	 */
 	public BaseSDMData(BaseSDMData other) {
 		this.dataRegisters = new TIntIntHashMap(other.dataRegisters);
@@ -92,7 +93,7 @@ public abstract class BaseSDMData implements SDMData {
 
 	@Override
 	public final synchronized void readMeterData(ModbusConnection conn) {
-		if ( readMeterDataInternal(conn) ) {
+		if (readMeterDataInternal(conn)) {
 			this.meterDataTimestamp = System.currentTimeMillis();
 		}
 	}
@@ -101,7 +102,7 @@ public abstract class BaseSDMData implements SDMData {
 	 * Called by {@link #readMeterData(ModbusConnection)}.
 	 * 
 	 * @param conn
-	 *        The Modbus connection to use.
+	 *            The Modbus connection to use.
 	 * @return <em>true</em> if the data has been read successfully
 	 */
 	protected abstract boolean readMeterDataInternal(ModbusConnection conn);
@@ -118,7 +119,7 @@ public abstract class BaseSDMData implements SDMData {
 
 	@Override
 	public final synchronized void readControlData(ModbusConnection conn) {
-		if ( readControlDataInternal(conn) ) {
+		if (readControlDataInternal(conn)) {
 			this.controlDataTimestamp = System.currentTimeMillis();
 		}
 	}
@@ -127,7 +128,7 @@ public abstract class BaseSDMData implements SDMData {
 	 * Called by {@link #readControlData(ModbusConnection)}.
 	 * 
 	 * @param conn
-	 *        The Modbus connection to use.
+	 *            The Modbus connection to use.
 	 * @return <em>true</em> if the data has been read successfully
 	 */
 	protected abstract boolean readControlDataInternal(ModbusConnection conn);
@@ -136,15 +137,14 @@ public abstract class BaseSDMData implements SDMData {
 	 * Read Modbus input registers in an address range.
 	 * 
 	 * @param conn
-	 *        The Modbus connection.
+	 *            The Modbus connection.
 	 * @param startAddr
-	 *        The starting Modbus register address.
+	 *            The starting Modbus register address.
 	 * @param endAddr
-	 *        The ending Modbus register address.
+	 *            The ending Modbus register address.
 	 */
 	protected void readInputData(final ModbusConnection conn, final int startAddr, final int endAddr) {
-		Map<Integer, Integer> data = conn.readInputValues(new Integer[] { startAddr },
-				(endAddr - startAddr + 1));
+		Map<Integer, Integer> data = conn.readInputValues(new Integer[] { startAddr }, (endAddr - startAddr + 1));
 		dataRegisters.putAll(data);
 	}
 
@@ -152,11 +152,11 @@ public abstract class BaseSDMData implements SDMData {
 	 * Read Modbus holding registers in an address range.
 	 * 
 	 * @param conn
-	 *        The Modbus connection.
+	 *            The Modbus connection.
 	 * @param startAddr
-	 *        The starting Modbus register address.
+	 *            The starting Modbus register address.
 	 * @param endAddr
-	 *        The ending Modbus register address.
+	 *            The ending Modbus register address.
 	 */
 	protected void readHoldingData(final ModbusConnection conn, final int startAddr, final int endAddr) {
 		int[] data = conn.readInts(startAddr, (endAddr - startAddr + 1));
@@ -168,15 +168,15 @@ public abstract class BaseSDMData implements SDMData {
 	 * starting at a given address.
 	 * 
 	 * @param data
-	 *        the data array to save
+	 *            the data array to save
 	 * @param addr
-	 *        the starting address of the data
+	 *            the starting address of the data
 	 */
 	protected void saveDataArray(final int[] data, int addr) {
-		if ( data == null || data.length < 1 ) {
+		if (data == null || data.length < 1) {
 			return;
 		}
-		for ( int v : data ) {
+		for (int v : data) {
 			dataRegisters.put(addr, v);
 			addr++;
 		}
@@ -187,15 +187,15 @@ public abstract class BaseSDMData implements SDMData {
 	 * starting at a given address.
 	 * 
 	 * @param data
-	 *        the control data array to save
+	 *            the control data array to save
 	 * @param addr
-	 *        the starting address of the data
+	 *            the starting address of the data
 	 */
 	protected void saveControlArray(final int[] data, int addr) {
-		if ( data == null || data.length < 1 ) {
+		if (data == null || data.length < 1) {
 			return;
 		}
-		for ( int v : data ) {
+		for (int v : data) {
 			controlRegisters.put(addr, v);
 			addr++;
 		}
@@ -224,12 +224,12 @@ public abstract class BaseSDMData implements SDMData {
 		int[] keys = snapshot.dataRegisters.keys();
 		Arrays.sort(keys);
 		boolean odd = true;
-		for ( int k : keys ) {
-			if ( odd ) {
+		for (int k : keys) {
+			if (odd) {
 				buf.append("\t").append(String.format("%5d", k + 30001)).append(": ");
 			}
 			buf.append(String.format("0x%04X", snapshot.dataRegisters.get(k)));
-			if ( odd ) {
+			if (odd) {
 				buf.append(", ");
 			} else {
 				buf.append("\n");
@@ -246,7 +246,7 @@ public abstract class BaseSDMData implements SDMData {
 	 * {@link #saveDataArray(int[], int)}.
 	 * 
 	 * @param addr
-	 *        The address of the saved data register to read.
+	 *            The address of the saved data register to read.
 	 * @return The parsed value, or <em>null</em> if not available.
 	 */
 	protected final Float getFloat32(final int addr) {
@@ -259,7 +259,7 @@ public abstract class BaseSDMData implements SDMData {
 	 * {@link #saveControlArray(int[], int)}.
 	 * 
 	 * @param addr
-	 *        The address of the saved control register to read.
+	 *            The address of the saved control register to read.
 	 * @return The parsed value, or <em>null</em> if not available.
 	 */
 	protected final Float getControlFloat32(final int addr) {
@@ -289,7 +289,7 @@ public abstract class BaseSDMData implements SDMData {
 	@Override
 	public Integer getPower(final int addr) {
 		Float value = getFloat32(addr);
-		if ( value == null ) {
+		if (value == null) {
 			return null;
 		}
 		return Integer.valueOf((int) (Math.round(value.doubleValue())));
@@ -298,7 +298,7 @@ public abstract class BaseSDMData implements SDMData {
 	@Override
 	public Long getEnergy(final int addr) {
 		Float value = getFloat32(addr);
-		if ( value == null ) {
+		if (value == null) {
 			return null;
 		}
 		return Long.valueOf(Math.round(value.doubleValue() * 1000.0));

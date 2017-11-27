@@ -20,16 +20,17 @@
  * ==================================================================
  */
 
-package net.solarnetwork.node.hw.deson.meter.mock;
+package net.solarnetwork.node.hw.deson.mock.meter;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import net.solarnetwork.node.DatumDataSource;
+
 import net.solarnetwork.node.domain.ACPhase;
 import net.solarnetwork.node.domain.Datum;
 import net.solarnetwork.node.io.modbus.ModbusConnection;
@@ -39,7 +40,6 @@ import net.solarnetwork.node.settings.support.BasicRadioGroupSettingSpecifier;
 import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
 import net.solarnetwork.node.settings.support.BasicTitleSettingSpecifier;
 import net.solarnetwork.node.settings.support.BasicToggleSettingSpecifier;
-import net.solarnetwork.node.support.DatumDataSourceSupport;
 import net.solarnetwork.util.StringUtils;
 
 /**
@@ -103,19 +103,19 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 	 * </p>
 	 * 
 	 * @param mapping
-	 *        the encoding mapping
+	 *            the encoding mapping
 	 * @see #getSourceMappingValue()
 	 */
 	public void setSourceMappingValue(String mapping) {
 		Map<String, String> m = StringUtils.commaDelimitedStringToMap(mapping);
 		Map<ACPhase, String> kindMap = new EnumMap<ACPhase, String>(ACPhase.class);
-		if ( m != null )
-			for ( Map.Entry<String, String> me : m.entrySet() ) {
+		if (m != null)
+			for (Map.Entry<String, String> me : m.entrySet()) {
 				String k = me.getKey();
 				ACPhase mk;
 				try {
 					mk = ACPhase.valueOf(k);
-				} catch ( RuntimeException e ) {
+				} catch (RuntimeException e) {
 					log.info("'{}' is not a valid ACPhase value, ignoring.", k);
 					continue;
 				}
@@ -147,7 +147,7 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 	 * Get a source ID value for a given measurement kind.
 	 * 
 	 * @param kind
-	 *        the measurement kind
+	 *            the measurement kind
 	 * @return the source ID value, or <em>null</em> if not available
 	 */
 	public String getSourceIdForACPhase(ACPhase kind) {
@@ -158,20 +158,20 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 		String msg = null;
 		try {
 			msg = getDeviceInfoMessage();
-		} catch ( RuntimeException e ) {
+		} catch (RuntimeException e) {
 			log.debug("Error reading info: {}", e.getMessage());
 		}
-		return (msg == null ? "N/A" : msg);
+		return (msg == null ? "We are running mock missing mock Modbus" : msg);
 	}
 
 	private String getSampleMessage(SDMData data) {
-		if ( data.getMeterDataTimestamp() < 1 ) {
+		if (data.getMeterDataTimestamp() < 1) {
 			return "N/A";
 		}
 		StringBuilder buf = new StringBuilder();
 		buf.append(data.getOperationStatusMessage());
-		buf.append("; sampled at ").append(
-				DateTimeFormat.forStyle("LS").print(new DateTime(sample.getMeterDataTimestamp())));
+		buf.append("; sampled at ")
+				.append(DateTimeFormat.forStyle("LS").print(new DateTime(sample.getMeterDataTimestamp())));
 		return buf.toString();
 	}
 
@@ -184,14 +184,13 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 
 		results.add(new BasicTextFieldSettingSpecifier("uid", defaults.getUid()));
 		results.add(new BasicTextFieldSettingSpecifier("groupUID", defaults.getGroupUID()));
-		results.add(new BasicTextFieldSettingSpecifier("modbusNetwork.propertyFilters['UID']",
-				"Modbus Port"));
+		results.add(new BasicTextFieldSettingSpecifier("modbusNetwork.propertyFilters['UID']", "Modbus Port"));
 		results.add(new BasicTextFieldSettingSpecifier("unitId", String.valueOf(defaults.getUnitId())));
 
-		BasicRadioGroupSettingSpecifier deviceTypeSpec = new BasicRadioGroupSettingSpecifier(
-				"deviceTypeValue", defaults.getDeviceTypeValue());
+		BasicRadioGroupSettingSpecifier deviceTypeSpec = new BasicRadioGroupSettingSpecifier("deviceTypeValue",
+				defaults.getDeviceTypeValue());
 		Map<String, String> deviceTypeValues = new LinkedHashMap<String, String>(3);
-		for ( SDMDeviceType model : SDMDeviceType.values() ) {
+		for (SDMDeviceType model : SDMDeviceType.values()) {
 			deviceTypeValues.put(model.toString(), model.toString());
 		}
 		deviceTypeSpec.setValueTitles(deviceTypeValues);
@@ -199,8 +198,7 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 
 		results.add(new BasicToggleSettingSpecifier("backwards", Boolean.valueOf(defaults.backwards)));
 
-		results.add(new BasicTextFieldSettingSpecifier("sourceMappingValue",
-				defaults.getSourceMappingValue()));
+		results.add(new BasicTextFieldSettingSpecifier("sourceMappingValue", defaults.getSourceMappingValue()));
 
 		return results;
 	}
@@ -208,23 +206,18 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 	/**
 	 * Post a {@link DatumDataSource#EVENT_TOPIC_DATUM_CAPTURED} {@link Event}.
 	 * 
-	 * <p>
-	 * This method calls {@link #createDatumCapturedEvent(Datum, Class)} to
+	 * <p> This method calls {@link #createDatumCapturedEvent(Datum, Class)} to
 	 * create the actual Event, which may be overridden by extending classes.
 	 * </p>
 	 * 
-	 * @param datum
-	 *        the {@link Datum} to post the event for
-	 * @param eventDatumType
-	 *        the Datum class to use for the
-	 *        {@link DatumDataSource#EVENT_DATUM_CAPTURED_DATUM_TYPE} property
-	 * @since 1.3
-	 * @deprecated use
-	 *             {@link DatumDataSourceSupport#postDatumCapturedEvent(Datum)
+	 * @param datum the {@link Datum} to post the event for @param
+	 * eventDatumType the Datum class to use for the {@link
+	 * DatumDataSource#EVENT_DATUM_CAPTURED_DATUM_TYPE} property @since
+	 * 1.3 @deprecated use {@link
+	 * DatumDataSourceSupport#postDatumCapturedEvent(Datum)
 	 */
 	@Deprecated
-	protected final void postDatumCapturedEvent(final Datum datum,
-			final Class<? extends Datum> eventDatumType) {
+	protected final void postDatumCapturedEvent(final Datum datum, final Class<? extends Datum> eventDatumType) {
 		postDatumCapturedEvent(datum);
 	}
 
@@ -281,7 +274,7 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 	 * Configure a mapping from AC phase constants to source ID values.
 	 * 
 	 * @param sourceMapping
-	 *        The source mappinng to set.
+	 *            The source mappinng to set.
 	 */
 	public void setSourceMapping(Map<ACPhase, String> sourceMapping) {
 		this.sourceMapping = sourceMapping;
@@ -296,13 +289,13 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 	 * data will be cleared.
 	 * 
 	 * @param deviceType
-	 *        The type of device to use.
+	 *            The type of device to use.
 	 */
 	public void setDeviceType(final SDMDeviceType deviceType) {
-		if ( deviceType == null ) {
+		if (deviceType == null) {
 			throw new IllegalArgumentException("The deviceType cannot be null.");
 		}
-		if ( this.deviceType.equals(deviceType) ) {
+		if (this.deviceType.equals(deviceType)) {
 			// no change
 			return;
 		}
@@ -312,13 +305,13 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 
 	private void setupNewSample(final SDMDeviceType deviceType) {
 		switch (deviceType) {
-			case SDM630:
-				sample = new SDM630Data(backwards);
-				break;
+		case SDM630:
+			sample = new SDM630Data(backwards);
+			break;
 
-			default:
-				sample = new SDM120Data(backwards);
-				break;
+		default:
+			sample = new SDM120Data(backwards);
+			break;
 		}
 	}
 
@@ -336,12 +329,12 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 	 * Set the device type, as a string.
 	 * 
 	 * @param type
-	 *        The {@link SDMDeviceType} string value to set.
+	 *            The {@link SDMDeviceType} string value to set.
 	 */
 	public void setDeviceTypeValue(String type) {
 		try {
 			setDeviceType(SDMDeviceType.valueOf(type));
-		} catch ( IllegalArgumentException e ) {
+		} catch (IllegalArgumentException e) {
 			// not supported type
 		}
 	}
@@ -350,11 +343,11 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 	 * Set the backwards setting.
 	 * 
 	 * @param backwards
-	 *        the backwards setting
+	 *            the backwards setting
 	 * @since 1.1
 	 */
 	public void setBackwards(boolean value) {
-		if ( value == backwards ) {
+		if (value == backwards) {
 			return;
 		}
 		this.backwards = value;

@@ -23,9 +23,10 @@
 package net.solarnetwork.node.datum.deson.sdm;
 
 import java.util.Date;
+
 import net.solarnetwork.node.domain.ACPhase;
 import net.solarnetwork.node.domain.GeneralNodeACEnergyDatum;
-import net.solarnetwork.node.hw.deson.meter.SDMData;
+import net.solarnetwork.node.hw.deson.mock.meter.SDMData;
 
 /**
  * Extension of {@link GeneralNodeACEnergyDatum} with additional properties
@@ -42,13 +43,13 @@ public class SDMDatum extends GeneralNodeACEnergyDatum {
 	 * Construct with a sample.
 	 * 
 	 * @param sample
-	 *        the sample
+	 *            the sample
 	 */
 	public SDMDatum(SDMData sample, ACPhase phase) {
 		super();
 		this.sample = sample;
 		setPhase(phase);
-		if ( sample.getMeterDataTimestamp() > 0 ) {
+		if (sample.getMeterDataTimestamp() > 0) {
 			setCreated(new Date(sample.getMeterDataTimestamp()));
 		}
 		sample.populateMeasurements(phase, this);

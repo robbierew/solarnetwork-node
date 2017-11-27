@@ -1,4 +1,4 @@
-package net.solarnetwork.node.hw.deson.meter.mock;
+package net.solarnetwork.node.hw.deson.mock.meter;
 
 import org.easymock.EasyMock;
 

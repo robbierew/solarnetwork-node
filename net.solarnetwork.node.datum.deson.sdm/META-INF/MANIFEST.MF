@@ -11,6 +11,7 @@ Import-Package:
  net.solarnetwork.node;version="1.22.0",
  net.solarnetwork.node.domain;version="1.10.0",
  net.solarnetwork.node.hw.deson.meter;version="[1.4,2.0)",
+ net.solarnetwork.node.hw.deson.mock.meter;version="1.4.0",
  net.solarnetwork.node.io.modbus;version="[2.0,3.0)",
  net.solarnetwork.node.job;version="1.11.0",
  net.solarnetwork.node.settings;version="1.8.0",

@@ -26,13 +26,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.springframework.context.MessageSource;
+
 import net.solarnetwork.node.DatumDataSource;
 import net.solarnetwork.node.MultiDatumDataSource;
 import net.solarnetwork.node.domain.ACPhase;
 import net.solarnetwork.node.domain.GeneralNodeACEnergyDatum;
-import net.solarnetwork.node.hw.deson.meter.SDMData;
-import net.solarnetwork.node.hw.deson.meter.SDMSupport;
+import net.solarnetwork.node.hw.deson.mock.meter.SDMData;
+import net.solarnetwork.node.hw.deson.mock.meter.SDMSupport;
 import net.solarnetwork.node.io.modbus.ModbusConnection;
 import net.solarnetwork.node.io.modbus.ModbusConnectionAction;
 import net.solarnetwork.node.settings.SettingSpecifier;
@@ -68,14 +70,15 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 
 	private SDMData getCurrentSample() {
 		SDMData currSample;
-		if ( isCachedSampleExpired() ) {
+		if (isCachedSampleExpired()) {
 			try {
 				currSample = performAction(new ModbusConnectionAction<SDMData>() {
 
 					@Override
 					public SDMData doWithConnection(ModbusConnection conn) throws IOException {
-						if ( sample.getControlDataTimestamp() <= 0 ) {
-							// we need to know what kind of meter we are dealing with
+						if (sample.getControlDataTimestamp() <= 0) {
+							// we need to know what kind of meter we are dealing
+							// with
 							sample.readControlData(conn);
 						}
 						sample.readMeterData(conn);
@@ -83,13 +86,12 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 					}
 
 				});
-				if ( log.isTraceEnabled() ) {
+				if (log.isTraceEnabled()) {
 					log.trace(currSample.dataDebugString());
 				}
 				log.debug("Read SDM data: {}", currSample);
-			} catch ( IOException e ) {
-				throw new RuntimeException(
-						"Communication problem reading from Modbus device " + modbusNetwork(), e);
+			} catch (IOException e) {
+				throw new RuntimeException("Communication problem reading from Modbus device " + modbusNetwork(), e);
 			}
 		} else {
 			currSample = sample.getSnapshot();
@@ -99,7 +101,7 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 
 	private boolean isCachedSampleExpired() {
 		final long lastReadDiff = System.currentTimeMillis() - sample.getMeterDataTimestamp();
-		if ( lastReadDiff > sampleCacheMs ) {
+		if (lastReadDiff > sampleCacheMs) {
 			return true;
 		}
 		return false;
@@ -116,7 +118,7 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 		final SDMData currSample = getCurrentSample();
 		SDMDatum d = new SDMDatum(currSample, ACPhase.Total);
 		d.setSourceId(getSourceMapping().get(ACPhase.Total));
-		if ( currSample.getMeterDataTimestamp() >= start ) {
+		if (currSample.getMeterDataTimestamp() >= start) {
 			// we read from the meter
 			postDatumCapturedEvent(d);
 		}
@@ -133,51 +135,51 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 		final long start = System.currentTimeMillis();
 		final SDMData currSample = getCurrentSample();
 		final List<GeneralNodeACEnergyDatum> results = new ArrayList<GeneralNodeACEnergyDatum>(4);
-		if ( currSample == null ) {
+		if (currSample == null) {
 			return results;
 		}
 		final boolean postCapturedEvent = (currSample.getMeterDataTimestamp() >= start);
-		if ( isCaptureTotal() || postCapturedEvent ) {
+		if (isCaptureTotal() || postCapturedEvent) {
 			SDMDatum d = new SDMDatum(currSample, ACPhase.Total);
 			d.setSourceId(getSourceMapping().get(ACPhase.Total));
-			if ( postCapturedEvent ) {
+			if (postCapturedEvent) {
 				// we read from the meter
 				postDatumCapturedEvent(d);
 			}
-			if ( isCaptureTotal() ) {
+			if (isCaptureTotal()) {
 				results.add(d);
 			}
 		}
-		if ( currSample.supportsPhase(ACPhase.PhaseA) && (isCapturePhaseA() || postCapturedEvent) ) {
+		if (currSample.supportsPhase(ACPhase.PhaseA) && (isCapturePhaseA() || postCapturedEvent)) {
 			SDMDatum d = new SDMDatum(currSample, ACPhase.PhaseA);
 			d.setSourceId(getSourceMapping().get(ACPhase.PhaseA));
-			if ( postCapturedEvent ) {
+			if (postCapturedEvent) {
 				// we read from the meter
 				postDatumCapturedEvent(d);
 			}
-			if ( isCapturePhaseA() ) {
+			if (isCapturePhaseA()) {
 				results.add(d);
 			}
 		}
-		if ( currSample.supportsPhase(ACPhase.PhaseB) && (isCapturePhaseB() || postCapturedEvent) ) {
+		if (currSample.supportsPhase(ACPhase.PhaseB) && (isCapturePhaseB() || postCapturedEvent)) {
 			SDMDatum d = new SDMDatum(currSample, ACPhase.PhaseB);
 			d.setSourceId(getSourceMapping().get(ACPhase.PhaseB));
-			if ( postCapturedEvent ) {
+			if (postCapturedEvent) {
 				// we read from the meter
 				postDatumCapturedEvent(d);
 			}
-			if ( isCapturePhaseB() ) {
+			if (isCapturePhaseB()) {
 				results.add(d);
 			}
 		}
-		if ( currSample.supportsPhase(ACPhase.PhaseC) && (isCapturePhaseC() || postCapturedEvent) ) {
+		if (currSample.supportsPhase(ACPhase.PhaseC) && (isCapturePhaseC() || postCapturedEvent)) {
 			SDMDatum d = new SDMDatum(currSample, ACPhase.PhaseC);
 			d.setSourceId(getSourceMapping().get(ACPhase.PhaseC));
-			if ( postCapturedEvent ) {
+			if (postCapturedEvent) {
 				// we read from the meter
 				postDatumCapturedEvent(d);
 			}
-			if ( isCapturePhaseC() ) {
+			if (isCapturePhaseC()) {
 				results.add(d);
 			}
 		}
@@ -210,8 +212,7 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 	public List<SettingSpecifier> getSettingSpecifiers() {
 		SDMDatumDataSource defaults = new SDMDatumDataSource();
 		List<SettingSpecifier> results = super.getSettingSpecifiers();
-		results.add(new BasicTextFieldSettingSpecifier("sampleCacheMs",
-				String.valueOf(defaults.getSampleCacheMs())));
+		results.add(new BasicTextFieldSettingSpecifier("sampleCacheMs", String.valueOf(defaults.getSampleCacheMs())));
 		return results;
 	}
 
@@ -228,7 +229,7 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 	 * Set the sample cache maximum age, in milliseconds.
 	 * 
 	 * @param sampleCacheSecondsMs
-	 *        the cache milliseconds
+	 *            the cache milliseconds
 	 */
 	public void setSampleCacheMs(long sampleCacheMs) {
 		this.sampleCacheMs = sampleCacheMs;

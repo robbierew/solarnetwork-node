@@ -20,7 +20,7 @@
  * ==================================================================
  */
 
-package net.solarnetwork.node.hw.deson.meter.mock;
+package net.solarnetwork.node.hw.deson.mock.meter;
 
 import java.util.Map;
 import net.solarnetwork.node.domain.ACPhase;
