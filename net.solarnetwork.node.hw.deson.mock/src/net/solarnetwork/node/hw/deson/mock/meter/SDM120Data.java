@@ -24,6 +24,7 @@ package net.solarnetwork.node.hw.deson.mock.meter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import net.solarnetwork.node.domain.ACPhase;
 import net.solarnetwork.node.domain.GeneralNodeACEnergyDatum;
 import net.solarnetwork.node.io.modbus.ModbusConnection;
@@ -71,7 +72,7 @@ public class SDM120Data extends BaseSDMData {
 	 * Copy constructor.
 	 * 
 	 * @param other
-	 *        the object to copy
+	 *            the object to copy
 	 */
 	public SDM120Data(SDM120Data other) {
 		super(other);
@@ -88,12 +89,11 @@ public class SDM120Data extends BaseSDMData {
 
 	@Override
 	public String toString() {
-		return "SDM120Data{V=" + getVoltage(ADDR_DATA_V_NEUTRAL) + ",A=" + getCurrent(ADDR_DATA_I)
-				+ ",PF=" + getPowerFactor(ADDR_DATA_POWER_FACTOR) + ",Hz="
-				+ getFrequency(ADDR_DATA_FREQUENCY) + ",W=" + getPower(ADDR_DATA_ACTIVE_POWER) + ",var="
-				+ getPower(ADDR_DATA_REACTIVE_POWER) + ",VA=" + getPower(ADDR_DATA_APPARENT_POWER)
-				+ ",Wh-I=" + getEnergy(ADDR_DATA_ACTIVE_ENERGY_IMPORT_TOTAL) + ",varh-I="
-				+ getEnergy(ADDR_DATA_REACTIVE_ENERGY_IMPORT_TOTAL) + ",Wh-E="
+		return "SDM120Data{V=" + getVoltage(ADDR_DATA_V_NEUTRAL) + ",A=" + getCurrent(ADDR_DATA_I) + ",PF="
+				+ getPowerFactor(ADDR_DATA_POWER_FACTOR) + ",Hz=" + getFrequency(ADDR_DATA_FREQUENCY) + ",W="
+				+ getPower(ADDR_DATA_ACTIVE_POWER) + ",var=" + getPower(ADDR_DATA_REACTIVE_POWER) + ",VA="
+				+ getPower(ADDR_DATA_APPARENT_POWER) + ",Wh-I=" + getEnergy(ADDR_DATA_ACTIVE_ENERGY_IMPORT_TOTAL)
+				+ ",varh-I=" + getEnergy(ADDR_DATA_REACTIVE_ENERGY_IMPORT_TOTAL) + ",Wh-E="
 				+ getEnergy(ADDR_DATA_ACTIVE_ENERGY_EXPORT_TOTAL) + ",varh-E="
 				+ getEnergy(ADDR_DATA_REACTIVE_ENERGY_EXPORT_TOTAL) + "}";
 	}
@@ -133,7 +133,14 @@ public class SDM120Data extends BaseSDMData {
 
 	@Override
 	public boolean readMeterDataInternal(final ModbusConnection conn) {
-		readInputData(conn, ADDR_DATA_V_NEUTRAL, ADDR_DATA_V_NEUTRAL + 79);
+
+		// robert changes
+		// had to make new var since first is final
+		ModbusConnection conn2 = DesonMockData.CONN;
+		//
+
+		// note conn2 was once conn
+		readInputData(conn2, ADDR_DATA_V_NEUTRAL, ADDR_DATA_V_NEUTRAL + 79);
 		return true;
 	}
 
@@ -144,7 +151,7 @@ public class SDM120Data extends BaseSDMData {
 
 	@Override
 	public void populateMeasurements(final ACPhase phase, final GeneralNodeACEnergyDatum datum) {
-		if ( !ACPhase.Total.equals(phase) ) {
+		if (!ACPhase.Total.equals(phase)) {
 			return;
 		}
 		SDM120Data sample = new SDM120Data(this);
@@ -157,7 +164,7 @@ public class SDM120Data extends BaseSDMData {
 		Long whImport = sample.getEnergy(ADDR_DATA_ACTIVE_ENERGY_IMPORT_TOTAL);
 		Long whExport = sample.getEnergy(ADDR_DATA_ACTIVE_ENERGY_EXPORT_TOTAL);
 
-		if ( isBackwards() ) {
+		if (isBackwards()) {
 			datum.setWattHourReading(whExport);
 			datum.setReverseWattHourReading(whImport);
 		} else {

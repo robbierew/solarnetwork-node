@@ -93,6 +93,11 @@ public abstract class BaseSDMData implements SDMData {
 
 	@Override
 	public final synchronized void readMeterData(ModbusConnection conn) {
+
+		// robert changes
+		conn = DesonMockData.CONN;
+		//
+
 		if (readMeterDataInternal(conn)) {
 			this.meterDataTimestamp = System.currentTimeMillis();
 		}
@@ -119,6 +124,11 @@ public abstract class BaseSDMData implements SDMData {
 
 	@Override
 	public final synchronized void readControlData(ModbusConnection conn) {
+
+		// robert changes
+		conn = DesonMockData.CONN;
+		//
+
 		if (readControlDataInternal(conn)) {
 			this.controlDataTimestamp = System.currentTimeMillis();
 		}
@@ -144,7 +154,14 @@ public abstract class BaseSDMData implements SDMData {
 	 *            The ending Modbus register address.
 	 */
 	protected void readInputData(final ModbusConnection conn, final int startAddr, final int endAddr) {
-		Map<Integer, Integer> data = conn.readInputValues(new Integer[] { startAddr }, (endAddr - startAddr + 1));
+
+		// robert changes
+		// had to make new var since first is final
+		ModbusConnection conn2 = DesonMockData.CONN;
+		//
+
+		// note conn2 was once conn
+		Map<Integer, Integer> data = conn2.readInputValues(new Integer[] { startAddr }, (endAddr - startAddr + 1));
 		dataRegisters.putAll(data);
 	}
 
@@ -159,7 +176,14 @@ public abstract class BaseSDMData implements SDMData {
 	 *            The ending Modbus register address.
 	 */
 	protected void readHoldingData(final ModbusConnection conn, final int startAddr, final int endAddr) {
-		int[] data = conn.readInts(startAddr, (endAddr - startAddr + 1));
+
+		// robert changes
+		// had to make new var since first is final
+		ModbusConnection conn2 = DesonMockData.CONN;
+		//
+
+		// note conn2 was once conn
+		int[] data = conn2.readInts(startAddr, (endAddr - startAddr + 1));
 		saveControlArray(data, startAddr);
 	}
 

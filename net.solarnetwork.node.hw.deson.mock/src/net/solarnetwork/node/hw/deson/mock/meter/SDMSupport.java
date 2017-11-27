@@ -31,6 +31,7 @@ import java.util.Map;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import net.solarnetwork.node.DatumDataSource;
 import net.solarnetwork.node.domain.ACPhase;
 import net.solarnetwork.node.domain.Datum;
 import net.solarnetwork.node.io.modbus.ModbusConnection;
@@ -40,6 +41,7 @@ import net.solarnetwork.node.settings.support.BasicRadioGroupSettingSpecifier;
 import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
 import net.solarnetwork.node.settings.support.BasicTitleSettingSpecifier;
 import net.solarnetwork.node.settings.support.BasicToggleSettingSpecifier;
+import net.solarnetwork.node.support.DatumDataSourceSupport;
 import net.solarnetwork.util.StringUtils;
 
 /**
@@ -82,6 +84,10 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 
 	@Override
 	protected Map<String, Object> readDeviceInfo(ModbusConnection conn) {
+
+		// robert changes
+		conn = DesonMockData.CONN;
+
 		sample.readControlData(conn);
 		return sample.getDeviceInfo();
 	}
@@ -206,15 +212,17 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 	/**
 	 * Post a {@link DatumDataSource#EVENT_TOPIC_DATUM_CAPTURED} {@link Event}.
 	 * 
-	 * <p> This method calls {@link #createDatumCapturedEvent(Datum, Class)} to
+	 * <p>
+	 * This method calls {@link #createDatumCapturedEvent(Datum, Class)} to
 	 * create the actual Event, which may be overridden by extending classes.
 	 * </p>
 	 * 
-	 * @param datum the {@link Datum} to post the event for @param
-	 * eventDatumType the Datum class to use for the {@link
-	 * DatumDataSource#EVENT_DATUM_CAPTURED_DATUM_TYPE} property @since
-	 * 1.3 @deprecated use {@link
-	 * DatumDataSourceSupport#postDatumCapturedEvent(Datum)
+	 * @param datum
+	 *            the {@link Datum} to post the event for @param eventDatumType
+	 *            the Datum class to use for the
+	 *            {@link DatumDataSource#EVENT_DATUM_CAPTURED_DATUM_TYPE}
+	 *            property @since 1.3 @deprecated use
+	 *            {@link DatumDataSourceSupport#postDatumCapturedEvent(Datum)
 	 */
 	@Deprecated
 	protected final void postDatumCapturedEvent(final Datum datum, final Class<? extends Datum> eventDatumType) {

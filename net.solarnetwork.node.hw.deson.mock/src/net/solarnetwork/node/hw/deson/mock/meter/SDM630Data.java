@@ -24,6 +24,7 @@ package net.solarnetwork.node.hw.deson.mock.meter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import net.solarnetwork.node.domain.ACPhase;
 import net.solarnetwork.node.domain.GeneralNodeACEnergyDatum;
 import net.solarnetwork.node.io.modbus.ModbusConnection;
@@ -100,7 +101,7 @@ public class SDM630Data extends BaseSDMData {
 	 * Copy constructor.
 	 * 
 	 * @param other
-	 *        the object to copy
+	 *            the object to copy
 	 */
 	public SDM630Data(SDM630Data other) {
 		super(other);
@@ -117,12 +118,10 @@ public class SDM630Data extends BaseSDMData {
 
 	@Override
 	public String toString() {
-		return "SDM630Data{V=" + getVoltage(ADDR_DATA_V_NEUTRAL_AVERAGE) + ",A="
-				+ getCurrent(ADDR_DATA_I_AVERAGE) + ",PF=" + getPowerFactor(ADDR_DATA_POWER_FACTOR_TOTAL)
-				+ ",Hz=" + getFrequency(ADDR_DATA_FREQUENCY) + ",W="
-				+ getPower(ADDR_DATA_ACTIVE_POWER_TOTAL) + ",var="
-				+ getPower(ADDR_DATA_REACTIVE_POWER_TOTAL) + ",VA="
-				+ getPower(ADDR_DATA_APPARENT_POWER_TOTAL) + ",Wh-I="
+		return "SDM630Data{V=" + getVoltage(ADDR_DATA_V_NEUTRAL_AVERAGE) + ",A=" + getCurrent(ADDR_DATA_I_AVERAGE)
+				+ ",PF=" + getPowerFactor(ADDR_DATA_POWER_FACTOR_TOTAL) + ",Hz=" + getFrequency(ADDR_DATA_FREQUENCY)
+				+ ",W=" + getPower(ADDR_DATA_ACTIVE_POWER_TOTAL) + ",var=" + getPower(ADDR_DATA_REACTIVE_POWER_TOTAL)
+				+ ",VA=" + getPower(ADDR_DATA_APPARENT_POWER_TOTAL) + ",Wh-I="
 				+ getEnergy(ADDR_DATA_ACTIVE_ENERGY_IMPORT_TOTAL) + ",varh-I="
 				+ getEnergy(ADDR_DATA_REACTIVE_ENERGY_IMPORT_TOTAL) + ",Wh-E="
 				+ getEnergy(ADDR_DATA_ACTIVE_ENERGY_EXPORT_TOTAL) + ",varh-E="
@@ -142,7 +141,7 @@ public class SDM630Data extends BaseSDMData {
 
 	public SDMWiringMode getWiringMode() {
 		final Float wiringType = getControlFloat32(ADDR_SYSTEM_WIRING_TYPE);
-		if ( wiringType == null ) {
+		if (wiringType == null) {
 			return null;
 		}
 		final int type = wiringType.intValue();
@@ -151,21 +150,21 @@ public class SDM630Data extends BaseSDMData {
 
 	public String getWiringType() {
 		SDMWiringMode mode = getWiringMode();
-		if ( mode == null ) {
+		if (mode == null) {
 			return "N/A";
 		}
 		switch (mode) {
-			case OnePhaseTwoWire:
-				return "1 phase, 2 wire";
+		case OnePhaseTwoWire:
+			return "1 phase, 2 wire";
 
-			case ThreePhaseThreeWire:
-				return "3 phase, 3 wire";
+		case ThreePhaseThreeWire:
+			return "3 phase, 3 wire";
 
-			case ThreePhaseFourWire:
-				return "3 phase, 4 wire";
+		case ThreePhaseFourWire:
+			return "3 phase, 4 wire";
 
-			default:
-				return "Unknown";
+		default:
+			return "Unknown";
 		}
 	}
 
@@ -185,14 +184,14 @@ public class SDM630Data extends BaseSDMData {
 
 	@Override
 	public boolean supportsPhase(ACPhase phase) {
-		if ( phase == ACPhase.Total ) {
+		if (phase == ACPhase.Total) {
 			return true;
 		}
 		SDMWiringMode wiringMode = getWiringMode();
-		if ( wiringMode == null ) {
+		if (wiringMode == null) {
 			return false;
 		}
-		if ( wiringMode == SDMWiringMode.OnePhaseTwoWire ) {
+		if (wiringMode == SDMWiringMode.OnePhaseTwoWire) {
 			// only the Total phase is supported for 1P2
 			return false;
 		}
@@ -211,6 +210,10 @@ public class SDM630Data extends BaseSDMData {
 
 	@Override
 	protected boolean readMeterDataInternal(ModbusConnection conn) {
+
+		// robert changes
+		conn = DesonMockData.CONN;
+
 		readInputData(conn, ADDR_DATA_V_L1_NEUTRAL, ADDR_DATA_V_L1_NEUTRAL + 79);
 		readInputData(conn, ADDR_DATA_V_L1_L2, ADDR_DATA_V_L1_L2 + 25);
 		return true;
@@ -218,6 +221,10 @@ public class SDM630Data extends BaseSDMData {
 
 	@Override
 	protected boolean readControlDataInternal(ModbusConnection conn) {
+
+		// robert changes
+		conn = DesonMockData.CONN;
+
 		readHoldingData(conn, ADDR_SYSTEM_WIRING_TYPE, ADDR_SYSTEM_SERIAL_NUMBER + 1);
 		return true;
 	}
@@ -226,21 +233,21 @@ public class SDM630Data extends BaseSDMData {
 	public void populateMeasurements(final ACPhase phase, final GeneralNodeACEnergyDatum datum) {
 		SDM630Data sample = new SDM630Data(this);
 		switch (phase) {
-			case Total:
-				populateTotalMeasurements(sample, datum);
-				break;
+		case Total:
+			populateTotalMeasurements(sample, datum);
+			break;
 
-			case PhaseA:
-				populatePhaseAMeasurements(sample, datum);
-				break;
+		case PhaseA:
+			populatePhaseAMeasurements(sample, datum);
+			break;
 
-			case PhaseB:
-				populatePhaseBMeasurements(sample, datum);
-				break;
+		case PhaseB:
+			populatePhaseBMeasurements(sample, datum);
+			break;
 
-			case PhaseC:
-				populatePhaseCMeasurements(sample, datum);
-				break;
+		case PhaseC:
+			populatePhaseCMeasurements(sample, datum);
+			break;
 		}
 	}
 
@@ -250,7 +257,7 @@ public class SDM630Data extends BaseSDMData {
 		Long whImport = sample.getEnergy(ADDR_DATA_ACTIVE_ENERGY_IMPORT_TOTAL);
 		Long whExport = sample.getEnergy(ADDR_DATA_ACTIVE_ENERGY_EXPORT_TOTAL);
 
-		if ( isBackwards() ) {
+		if (isBackwards()) {
 			datum.setWattHourReading(whExport);
 			datum.setReverseWattHourReading(whImport);
 		} else {
@@ -261,7 +268,7 @@ public class SDM630Data extends BaseSDMData {
 		final SDMWiringMode wiringMode = getWiringMode();
 
 		datum.setApparentPower(sample.getPower(ADDR_DATA_APPARENT_POWER_TOTAL));
-		if ( wiringMode == SDMWiringMode.OnePhaseTwoWire ) {
+		if (wiringMode == SDMWiringMode.OnePhaseTwoWire) {
 			datum.setCurrent(sample.getCurrent(ADDR_DATA_I1));
 			datum.setVoltage(sample.getVoltage(ADDR_DATA_V_L1_NEUTRAL));
 		} else {
