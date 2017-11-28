@@ -1,14 +1,15 @@
 package net.solarnetwork.node.hw.deson.mock.meter;
 
-import org.easymock.EasyMock;
+import java.util.LinkedList;
+import java.util.List;
 
 import net.solarnetwork.node.io.modbus.ModbusConnection;
 
 public class DesonMockData {
 
-	protected static final ModbusConnection CONN = EasyMock.createMock(ModbusConnection.class);
+	public static final ModbusConnection CONN = new ModbusMock();
 
-	private static final int[] TEST_DATA_30001_80 = bytesToModbusWords(new int[] { 0x43, 0x64, 0xB3, 0x33, 0x00, 0x00,
+	public static final int[] TEST_DATA_30001_80 = bytesToModbusWords(new int[] { 0x43, 0x64, 0xB3, 0x33, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 7 */0x41, 0x00, 0x28, 0xF6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, /* 13 */0xC4, 0xE5, 0x19, 0x9A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 19 */0x44, 0xE5,
 			0x1F, 0x15, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 25 */0x41, 0x90, 0xCC, 0xCD, 0x00, 0x00,
@@ -36,4 +37,30 @@ public class DesonMockData {
 		}
 		return ints;
 	}
+
+	/**
+	 * 
+	 * @return test data with small changes
+	 */
+	public static int[] getData() {
+		int[] copy = new int[TEST_DATA_30001_80.length];
+		System.arraycopy(TEST_DATA_30001_80, 0, copy, 0, TEST_DATA_30001_80.length);
+		// add small changes to the addresses we are looking at
+		List<Integer> importantAddr = new LinkedList<Integer>();
+		importantAddr.add(SDM120Data.ADDR_DATA_ACTIVE_ENERGY_IMPORT_TOTAL);
+		importantAddr.add(SDM120Data.ADDR_DATA_APPARENT_POWER);
+		importantAddr.add(SDM120Data.ADDR_DATA_ACTIVE_ENERGY_IMPORT_TOTAL);
+		importantAddr.add(SDM120Data.ADDR_DATA_POWER_FACTOR);
+
+		for (Integer i : importantAddr) {
+			// MSB gets less of a shift
+			copy[i] = copy[i] + (int) (2 * Math.sin(Math.random() * Math.PI));
+
+			// we read the ajancent address aswell so give it a look
+			copy[i + 1] = copy[i + 1] + (int) (12 * Math.sin(Math.random() * Math.PI));
+		}
+
+		return copy;
+	}
+
 }

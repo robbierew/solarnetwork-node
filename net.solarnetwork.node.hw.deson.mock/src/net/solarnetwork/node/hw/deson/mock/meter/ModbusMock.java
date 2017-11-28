@@ -2,76 +2,103 @@ package net.solarnetwork.node.hw.deson.mock.meter;
 
 import java.io.IOException;
 import java.util.BitSet;
+import java.util.Hashtable;
 import java.util.Map;
 
-import net.solarnetwork.node.LockTimeoutException;
-import net.solarnetwork.node.io.modbus.JamodModbusConnection;
-import net.wimpi.modbus.net.SerialConnection;
+import net.solarnetwork.node.io.modbus.ModbusConnection;
 
-public class ModbusMock extends JamodModbusConnection {
+public class ModbusMock implements ModbusConnection {
 
-	public ModbusMock() {
-		super((SerialConnection) null, 1);
+	private final int unitId = 1;
+
+	@Override
+	public String toString() {
+
+		return "Modbus Mock";
 	}
 
 	@Override
-	public void open() throws IOException, LockTimeoutException {
-		// TODO Auto-generated method stub
+	public final int getUnitId() {
+		return unitId;
+	}
+
+	@Override
+	public void open() throws IOException {
 
 	}
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public BitSet readDiscreetValues(Integer[] addresses, int count) {
-		// TODO Auto-generated method stub
-		return null;
+		return new BitSet(5);
 	}
 
 	@Override
 	public Boolean writeDiscreetValues(Integer[] addresses, BitSet bits) {
-		// TODO Auto-generated method stub
-		return null;
+		return true;
 	}
 
 	@Override
 	public Map<Integer, Integer> readInputValues(Integer[] addresses, int count) {
-		// TODO Auto-generated method stub
-		return null;
+		Map<Integer, Integer> data = new Hashtable<Integer, Integer>();
+		int addr = 0;
+		for (int i : DesonMockData.getData()) {
+			data.put(addr, i);
+			addr++;
+		}
+		return data;
 	}
 
 	@Override
 	public byte[] readBytes(Integer address, int count) {
-		// TODO Auto-generated method stub
-		return null;
+		byte[] result = new byte[count];
+		for (int i = 0; i < count; i++) {
+			result[i] = (byte) DesonMockData.getData()[address + i];
+		}
+		return result;
 	}
 
 	@Override
 	public String readString(Integer address, int count, boolean trim, String charsetName) {
-		// TODO Auto-generated method stub
-		return null;
+		return "This is a read String of data";
 	}
 
 	@Override
 	public int[] readInts(Integer address, int count) {
-		// TODO Auto-generated method stub
-		return null;
+		int[] result = new int[count];
+		for (int i = 0; i < count; i++) {
+			result[i] = DesonMockData.getData()[address + i];
+		}
+		return result;
 	}
 
 	@Override
 	public short[] readSignedShorts(Integer address, int count) {
-		// TODO Auto-generated method stub
-		return null;
+		short[] result = new short[count];
+		for (int i = 0; i < count; i++) {
+			result[i] = (short) DesonMockData.getData()[address + i];
+		}
+		return result;
+
 	}
 
 	@Override
 	public Integer[] readValues(Integer address, int count) {
-		// TODO Auto-generated method stub
-		return null;
+		Integer[] result = new Integer[count];
+		for (int i = 0; i < count; i++) {
+			result[i] = DesonMockData.getData()[address + i];
+		}
+		return result;
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		close();
+		super.finalize();
 	}
 
 }

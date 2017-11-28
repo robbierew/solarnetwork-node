@@ -27,8 +27,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.BitSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import net.solarnetwork.util.OptionalService;
 import net.wimpi.modbus.ModbusException;
 import net.wimpi.modbus.io.ModbusSerialTransaction;
@@ -72,18 +74,17 @@ public final class ModbusHelper {
 	 * </p>
 	 * 
 	 * @param connectionFactory
-	 *        the connection factory to use, via an {@link OptionalService}
+	 *            the connection factory to use, via an {@link OptionalService}
 	 * @param action
-	 *        the connection callback
+	 *            the connection callback
 	 * @return the result of the callback, or <em>null</em> if the callback is
 	 *         never invoked
 	 */
 	public static <T> T execute(OptionalService<ModbusSerialConnectionFactory> connectionFactory,
 			ModbusConnectionCallback<T> action) {
 		T result = null;
-		ModbusSerialConnectionFactory factory = (connectionFactory == null ? null
-				: connectionFactory.service());
-		if ( factory != null ) {
+		ModbusSerialConnectionFactory factory = (connectionFactory == null ? null : connectionFactory.service());
+		if (factory != null) {
 			result = factory.execute(action);
 		}
 		return result;
@@ -94,20 +95,20 @@ public final class ModbusHelper {
 	 * a Modbus function code {@code 1} request.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param addresses
-	 *        the Modbus register addresses to read
+	 *            the Modbus register addresses to read
 	 * @param count
-	 *        the count of registers to read with each address
+	 *            the count of registers to read with each address
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @return BitSet, with each index corresponding to an index in the
 	 *         <code>addresses</code> parameter
 	 */
-	public static BitSet readDiscreetValues(SerialConnection conn, final Integer[] addresses,
-			final int count, final int unitId) {
+	public static BitSet readDiscreetValues(SerialConnection conn, final Integer[] addresses, final int count,
+			final int unitId) {
 		BitSet result = new BitSet(addresses.length);
-		for ( int i = 0; i < addresses.length; i++ ) {
+		for (int i = 0; i < addresses.length; i++) {
 			ModbusSerialTransaction trans = new ModbusSerialTransaction(conn);
 			ReadCoilsRequest req = new ReadCoilsRequest(addresses[i], 1);
 			req.setUnitID(unitId);
@@ -115,16 +116,16 @@ public final class ModbusHelper {
 			trans.setRequest(req);
 			try {
 				trans.execute();
-			} catch ( ModbusException e ) {
+			} catch (ModbusException e) {
 				throw new RuntimeException(e);
 			}
 			ReadCoilsResponse res = (ReadCoilsResponse) trans.getResponse();
-			if ( LOG.isTraceEnabled() ) {
+			if (LOG.isTraceEnabled()) {
 				LOG.trace("Got Modbus read coil {} response [{}]", addresses[i], res.getCoils());
 			}
 			result.set(i, res.getCoilStatus(0));
 		}
-		if ( LOG.isDebugEnabled() ) {
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Read Modbus coil {} values: {}", addresses, result);
 		}
 		return result;
@@ -135,20 +136,20 @@ public final class ModbusHelper {
 	 * function code {@code 5} request.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param addresses
-	 *        the Modbus register addresses to read
+	 *            the Modbus register addresses to read
 	 * @param bits
-	 *        a BitSet representing the value to set for each corresponding
-	 *        {@code addresses} value
+	 *            a BitSet representing the value to set for each corresponding
+	 *            {@code addresses} value
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @return BitSet, with each index corresponding to an index in the
 	 *         <code>addresses</code> parameter
 	 */
-	public static Boolean writeDiscreetValues(SerialConnection conn, final Integer[] addresses,
-			final BitSet bits, final int unitId) {
-		for ( int i = 0; i < addresses.length; i++ ) {
+	public static Boolean writeDiscreetValues(SerialConnection conn, final Integer[] addresses, final BitSet bits,
+			final int unitId) {
+		for (int i = 0; i < addresses.length; i++) {
 			ModbusSerialTransaction trans = new ModbusSerialTransaction(conn);
 			WriteCoilRequest req = new WriteCoilRequest(addresses[i], bits.get(i));
 			req.setUnitID(unitId);
@@ -156,11 +157,11 @@ public final class ModbusHelper {
 			trans.setRequest(req);
 			try {
 				trans.execute();
-			} catch ( ModbusException e ) {
+			} catch (ModbusException e) {
 				throw new RuntimeException(e);
 			}
 			WriteCoilResponse res = (WriteCoilResponse) trans.getResponse();
-			if ( LOG.isTraceEnabled() ) {
+			if (LOG.isTraceEnabled()) {
 				LOG.trace("Got write {} response [{}]", addresses[i], res.getCoil());
 			}
 		}
@@ -172,20 +173,19 @@ public final class ModbusHelper {
 	 * Modbus function code {@code 1} request.
 	 * 
 	 * @param connectionFactory
-	 *        the connection factory to obtain a connection with
+	 *            the connection factory to obtain a connection with
 	 * @param addresses
-	 *        the Modbus register addresses to read
+	 *            the Modbus register addresses to read
 	 * @param count
-	 *        the count of registers to read with each address
+	 *            the count of registers to read with each address
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @return BitSet, with each index corresponding to an index in the
 	 *         <code>addresses</code> parameter
 	 * @see readDiscreetValues(SerialConnection, Integer[], int, int)
 	 */
-	public static BitSet readDiscreetValues(
-			OptionalService<ModbusSerialConnectionFactory> connectionFactory, final Integer[] addresses,
-			final int count, final int unitId) {
+	public static BitSet readDiscreetValues(OptionalService<ModbusSerialConnectionFactory> connectionFactory,
+			final Integer[] addresses, final int count, final int unitId) {
 		return execute(connectionFactory, new ModbusConnectionCallback<BitSet>() {
 
 			@Override
@@ -201,13 +201,13 @@ public final class ModbusHelper {
 	 * function code {@code 4} request.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param addresses
-	 *        the Modbus register addresses to read
+	 *            the Modbus register addresses to read
 	 * @param count
-	 *        the number of Modbus "words" to read from each address
+	 *            the number of Modbus "words" to read from each address
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @return map of integer addresses to corresponding integer values, there
 	 *         should be {@code count} values for each {@code address} read
 	 */
@@ -215,7 +215,7 @@ public final class ModbusHelper {
 			final int count, final int unitId) {
 		Map<Integer, Integer> result = new LinkedHashMap<Integer, Integer>(
 				(addresses == null ? 0 : addresses.length) * count);
-		for ( int i = 0; i < addresses.length; i++ ) {
+		for (int i = 0; i < addresses.length; i++) {
 			ModbusSerialTransaction trans = new ModbusSerialTransaction(conn);
 			ReadInputRegistersRequest req = new ReadInputRegistersRequest(addresses[i], count);
 			req.setUnitID(unitId);
@@ -223,19 +223,18 @@ public final class ModbusHelper {
 			trans.setRequest(req);
 			try {
 				trans.execute();
-			} catch ( ModbusException e ) {
+			} catch (ModbusException e) {
 				throw new RuntimeException(e);
 			}
 			ReadInputRegistersResponse res = (ReadInputRegistersResponse) trans.getResponse();
-			for ( int w = 0; w < res.getWordCount(); w++ ) {
-				if ( LOG.isTraceEnabled() ) {
-					LOG.trace("Got Modbus read input {} response {}", addresses[i] + w,
-							res.getRegisterValue(w));
+			for (int w = 0; w < res.getWordCount(); w++) {
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("Got Modbus read input {} response {}", addresses[i] + w, res.getRegisterValue(w));
 				}
 				result.put(addresses[i] + w, res.getRegisterValue(w));
 			}
 		}
-		if ( LOG.isDebugEnabled() ) {
+		if (LOG.isDebugEnabled()) {
 			LOG.debug("Read Modbus input registers {} values: {}", addresses, result);
 		}
 		return result;
@@ -246,13 +245,13 @@ public final class ModbusHelper {
 	 * function code {@code 4} request.
 	 * 
 	 * @param connectionFactory
-	 *        the connection factory to obtain a connection with
+	 *            the connection factory to obtain a connection with
 	 * @param addresses
-	 *        the Modbus register addresses to read
+	 *            the Modbus register addresses to read
 	 * @param count
-	 *        the number of Modbus "words" to read from each address
+	 *            the number of Modbus "words" to read from each address
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @param unitId
 	 * @return list of integer values, there should be {@code count} values for
 	 *         each {@code address} read
@@ -275,13 +274,13 @@ public final class ModbusHelper {
 	 * function code {@code 3} request.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param address
-	 *        the Modbus register address to start reading from
+	 *            the Modbus register address to start reading from
 	 * @param count
-	 *        the number of Modbus "words" to read
+	 *            the number of Modbus "words" to read
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @return array of register values; the result will have a length equal to
 	 *         {@code count}
 	 */
@@ -295,19 +294,18 @@ public final class ModbusHelper {
 		trans.setRequest(req);
 		try {
 			trans.execute();
-		} catch ( ModbusException e ) {
+		} catch (ModbusException e) {
 			throw new RuntimeException(e);
 		}
 		ReadMultipleRegistersResponse res = (ReadMultipleRegistersResponse) trans.getResponse();
-		for ( int w = 0; w < res.getWordCount(); w++ ) {
-			if ( LOG.isTraceEnabled() ) {
+		for (int w = 0; w < res.getWordCount(); w++) {
+			if (LOG.isTraceEnabled()) {
 				LOG.trace("Got Modbus read {} response {}", address + w, res.getRegisterValue(w));
 			}
 			result[w] = res.getRegisterValue(w);
 		}
-		if ( LOG.isDebugEnabled() ) {
-			LOG.debug("Read Modbus register {} count {} values: {}",
-					new Object[] { address, count, result });
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Read Modbus register {} count {} values: {}", new Object[] { address, count, result });
 		}
 		return result;
 	}
@@ -317,18 +315,17 @@ public final class ModbusHelper {
 	 * This uses a Modbus function code {@code 3} request.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param address
-	 *        the Modbus register address to start reading from
+	 *            the Modbus register address to start reading from
 	 * @param count
-	 *        the number of Modbus "words" to read
+	 *            the number of Modbus "words" to read
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @return array of register values; the result will have a length equal to
 	 *         {@code count}
 	 */
-	public static int[] readInts(SerialConnection conn, final Integer address, final int count,
-			final int unitId) {
+	public static int[] readInts(SerialConnection conn, final Integer address, final int count, final int unitId) {
 		int[] result = new int[count];
 		ModbusSerialTransaction trans = new ModbusSerialTransaction(conn);
 		ReadMultipleRegistersRequest req = new ReadMultipleRegistersRequest(address, count);
@@ -337,19 +334,18 @@ public final class ModbusHelper {
 		trans.setRequest(req);
 		try {
 			trans.execute();
-		} catch ( ModbusException e ) {
+		} catch (ModbusException e) {
 			throw new RuntimeException(e);
 		}
 		ReadMultipleRegistersResponse res = (ReadMultipleRegistersResponse) trans.getResponse();
-		for ( int w = 0; w < res.getWordCount(); w++ ) {
-			if ( LOG.isTraceEnabled() ) {
+		for (int w = 0; w < res.getWordCount(); w++) {
+			if (LOG.isTraceEnabled()) {
 				LOG.trace("Got Modbus read {} response {}", address + w, res.getRegisterValue(w));
 			}
 			result[w] = res.getRegisterValue(w);
 		}
-		if ( LOG.isDebugEnabled() ) {
-			LOG.debug("Read Modbus register {} count {} values: {}",
-					new Object[] { address, count, result });
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Read Modbus register {} count {} values: {}", new Object[] { address, count, result });
 		}
 		return result;
 	}
@@ -359,13 +355,13 @@ public final class ModbusHelper {
 	 * uses a Modbus function code {@code 3} request.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param address
-	 *        the Modbus register address to start reading from
+	 *            the Modbus register address to start reading from
 	 * @param count
-	 *        the number of Modbus "words" to read
+	 *            the number of Modbus "words" to read
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @return array of register values; the result will have a length equal to
 	 *         {@code count}
 	 */
@@ -379,19 +375,18 @@ public final class ModbusHelper {
 		trans.setRequest(req);
 		try {
 			trans.execute();
-		} catch ( ModbusException e ) {
+		} catch (ModbusException e) {
 			throw new RuntimeException(e);
 		}
 		ReadMultipleRegistersResponse res = (ReadMultipleRegistersResponse) trans.getResponse();
-		for ( int w = 0; w < res.getWordCount(); w++ ) {
-			if ( LOG.isTraceEnabled() ) {
+		for (int w = 0; w < res.getWordCount(); w++) {
+			if (LOG.isTraceEnabled()) {
 				LOG.trace("Got Modbus read {} response {}", address + w, res.getRegisterValue(w));
 			}
 			result[w] = res.getRegister(w).toShort();
 		}
-		if ( LOG.isDebugEnabled() ) {
-			LOG.debug("Read Modbus register {} count {} shorts: {}",
-					new Object[] { address, count, result });
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Read Modbus register {} count {} shorts: {}", new Object[] { address, count, result });
 		}
 		return result;
 	}
@@ -401,13 +396,13 @@ public final class ModbusHelper {
 	 * function code {@code 3} request.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param address
-	 *        the Modbus register address to start reading from
+	 *            the Modbus register address to start reading from
 	 * @param count
-	 *        the number of Modbus 2-byte "words" to read
+	 *            the number of Modbus 2-byte "words" to read
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @return array of register bytes; the result will have a length equal to
 	 *         {@code count * 2}
 	 */
@@ -421,23 +416,22 @@ public final class ModbusHelper {
 		trans.setRequest(req);
 		try {
 			trans.execute();
-		} catch ( ModbusException e ) {
+		} catch (ModbusException e) {
 			throw new RuntimeException(e);
 		}
 		ReadMultipleRegistersResponse res = (ReadMultipleRegistersResponse) trans.getResponse();
 		InputRegister[] registers = res.getRegisters();
-		if ( registers != null ) {
+		if (registers != null) {
 
-			for ( int i = 0; i < registers.length; i++ ) {
-				if ( LOG.isTraceEnabled() ) {
+			for (int i = 0; i < registers.length; i++) {
+				if (LOG.isTraceEnabled()) {
 					LOG.trace("Got Modbus read {} response {}", address + i, res.getRegisterValue(i));
 				}
 				System.arraycopy(registers[i].toBytes(), 0, result, i * 2, 2);
 			}
 		}
-		if ( LOG.isDebugEnabled() ) {
-			LOG.debug("Read Modbus register {} count {} bytes: {}",
-					new Object[] { address, count, result });
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Read Modbus register {} count {} bytes: {}", new Object[] { address, count, result });
 		}
 		return result;
 	}
@@ -447,21 +441,21 @@ public final class ModbusHelper {
 	 * string.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param address
-	 *        the Modbus register address to start reading from
+	 *            the Modbus register address to start reading from
 	 * @param count
-	 *        the number of Modbus "words" to read
+	 *            the number of Modbus "words" to read
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @param trim
-	 *        if <em>true</em> then remove leading/trailing whitespace from the
-	 *        resulting string
+	 *            if <em>true</em> then remove leading/trailing whitespace from
+	 *            the resulting string
 	 * @return String from interpreting raw bytes as a UTF-8 encoded string
 	 * @see #readString(SerialConnection, Integer, int, int, boolean, String)
 	 */
-	public static String readUTF8String(final SerialConnection conn, final Integer address,
-			final int count, final int unitId, final boolean trim) {
+	public static String readUTF8String(final SerialConnection conn, final Integer address, final int count,
+			final int unitId, final boolean trim) {
 		return readString(conn, address, count, unitId, trim, UTF8_CHARSET);
 	}
 
@@ -470,21 +464,21 @@ public final class ModbusHelper {
 	 * string.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param address
-	 *        the Modbus register address to start reading from
+	 *            the Modbus register address to start reading from
 	 * @param count
-	 *        the number of Modbus "words" to read
+	 *            the number of Modbus "words" to read
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @param trim
-	 *        if <em>true</em> then remove leading/trailing whitespace from the
-	 *        resulting string
+	 *            if <em>true</em> then remove leading/trailing whitespace from
+	 *            the resulting string
 	 * @return String from interpreting raw bytes as a US-ASCII encoded string
 	 * @see #readString(SerialConnection, Integer, int, int, boolean, String)
 	 */
-	public static String readASCIIString(final SerialConnection conn, final Integer address,
-			final int count, final int unitId, final boolean trim) {
+	public static String readASCIIString(final SerialConnection conn, final Integer address, final int count,
+			final int unitId, final boolean trim) {
 		return readString(conn, address, count, unitId, trim, ASCII_CHARSET);
 	}
 
@@ -493,18 +487,18 @@ public final class ModbusHelper {
 	 * a Modbus function code {@code 3} request.
 	 * 
 	 * @param conn
-	 *        the Modbus connection to use
+	 *            the Modbus connection to use
 	 * @param address
-	 *        the Modbus register address to start reading from
+	 *            the Modbus register address to start reading from
 	 * @param count
-	 *        the number of Modbus "words" to read
+	 *            the number of Modbus "words" to read
 	 * @param unitId
-	 *        the Modbus unit ID to use in the read request
+	 *            the Modbus unit ID to use in the read request
 	 * @param trim
-	 *        if <em>true</em> then remove leading/trailing whitespace from the
-	 *        resulting string
+	 *            if <em>true</em> then remove leading/trailing whitespace from
+	 *            the resulting string
 	 * @param charsetName
-	 *        the character set to interpret the bytes as
+	 *            the character set to interpret the bytes as
 	 * @return String from interpreting raw bytes as a string
 	 * @see #readBytes(SerialConnection, Integer, int, int)
 	 */
@@ -512,19 +506,18 @@ public final class ModbusHelper {
 			final int unitId, final boolean trim, final String charsetName) {
 		final byte[] bytes = readBytes(conn, address, count, unitId);
 		String result = null;
-		if ( bytes != null ) {
+		if (bytes != null) {
 			try {
 				result = new String(bytes, charsetName);
-				if ( trim ) {
+				if (trim) {
 					result = result.trim();
 				}
-			} catch ( UnsupportedEncodingException e ) {
+			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
 		}
-		if ( LOG.isDebugEnabled() ) {
-			LOG.debug("Read Modbus input register {} count {} string: {}",
-					new Object[] { address, count, result });
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Read Modbus input register {} count {} string: {}", new Object[] { address, count, result });
 		}
 		return result;
 	}
@@ -534,9 +527,9 @@ public final class ModbusHelper {
 	 * word.
 	 * 
 	 * @param hiWord
-	 *        the high word
+	 *            the high word
 	 * @param loWord
-	 *        the low word
+	 *            the low word
 	 * @return a 32-bit long word value
 	 */
 	public static int getLongWord(int hiWord, int loWord) {
@@ -549,13 +542,13 @@ public final class ModbusHelper {
 	 * {@code offset} + {@code 1}, and be arranged in big-endian order.
 	 * 
 	 * @param data
-	 *        the data array
+	 *            the data array
 	 * @return the parsed float, or <em>null</em> if not available or parsed
 	 *         float is {@code NaN}
 	 */
 	public static Float parseFloat32(final int[] data, int offset) {
 		Float result = null;
-		if ( data != null && (offset + 1) < data.length ) {
+		if (data != null && (offset + 1) < data.length) {
 			result = parseFloat32(data[0], data[1]);
 		}
 		return result;
@@ -565,15 +558,20 @@ public final class ModbusHelper {
 	 * Parse a 32-bit float value from raw Modbus register values.
 	 * 
 	 * @param high
-	 *        the high 16 bits
+	 *            the high 16 bits
 	 * @param low
-	 *        the low 16 bits
+	 *            the low 16 bits
 	 * @return the parsed float, or <em>null</em> if not available or parsed
 	 *         float is {@code NaN}
 	 */
 	public static Float parseFloat32(final int high, final int low) {
+
+		// the & 0xFFFF only keeps the last 16 bits of the int,
+		// the << 16 shifts the bits 16 places to the left
+		// we then or with the the last 16 bits of low
+		// comment by robert (intern)
 		Float result = Float.intBitsToFloat(((high & 0xFFFF) << 16) | (low & 0xFFFF));
-		if ( result.isNaN() ) {
+		if (result.isNaN()) {
 			LOG.trace("Data results in NaN: {} {}", high, low);
 			result = null;
 		}
@@ -586,16 +584,15 @@ public final class ModbusHelper {
 	 * arranged in big-endian order.
 	 * 
 	 * @param data
-	 *        the data array
+	 *            the data array
 	 * @return the parsed float, or <em>null</em> if not available or parsed
 	 *         float is {@code NaN}
 	 */
 	public static Float parseFloat32(final Integer[] data) {
 		Float result = null;
-		if ( data != null && data.length == 2 ) {
-			result = Float.intBitsToFloat(
-					((data[0].intValue() & 0xFFFF) << 16) | (data[1].intValue() & 0xFFFF));
-			if ( result.isNaN() ) {
+		if (data != null && data.length == 2) {
+			result = Float.intBitsToFloat(((data[0].intValue() & 0xFFFF) << 16) | (data[1].intValue() & 0xFFFF));
+			if (result.isNaN()) {
 				LOG.trace("Data results in NaN: {}", (Object) data);
 				result = null;
 			}
@@ -609,12 +606,12 @@ public final class ModbusHelper {
 	 * arranged in big-endian order.
 	 * 
 	 * @param data
-	 *        the data array
+	 *            the data array
 	 * @return the parsed long
 	 */
 	public static Long parseInt64(final Integer[] data) {
 		Long result = null;
-		if ( data != null && data.length == 4 ) {
+		if (data != null && data.length == 4) {
 			result = parseInt64(data[0], data[1], data[2], data[3]);
 		}
 		return result;
@@ -624,18 +621,18 @@ public final class ModbusHelper {
 	 * Parse a 64-bit long value from raw Modbus register values.
 	 * 
 	 * @param h1
-	 *        bits 63-48
+	 *            bits 63-48
 	 * @param h2
-	 *        bits 47-32
+	 *            bits 47-32
 	 * @param l1
-	 *        bits 31-16
+	 *            bits 31-16
 	 * @param l2
-	 *        bits 15-0
+	 *            bits 15-0
 	 * @return the parsed long
 	 */
 	public static Long parseInt64(final int h1, final int h2, final int l1, final int l2) {
-		return ((((long) h1 & 0xFFFF) << 48) | (((long) h2 & 0xFFFF) << 32)
-				| (((long) l1 & 0xFFFF) << 16) | ((long) l2 & 0xFFFF));
+		return ((((long) h1 & 0xFFFF) << 48) | (((long) h2 & 0xFFFF) << 32) | (((long) l1 & 0xFFFF) << 16)
+				| ((long) l2 & 0xFFFF));
 	}
 
 	/**
@@ -645,14 +642,14 @@ public final class ModbusHelper {
 	 * <b>Note</b> a {@code Long} is returned to support unsigned 32-bit values.
 	 * 
 	 * @param data
-	 *        the data array
+	 *            the data array
 	 * @param offset
-	 *        the offset in the array to parse the 32-bit value
+	 *            the offset in the array to parse the 32-bit value
 	 * @return the parsed long
 	 */
 	public static Long parseInt32(final int[] data, int offset) {
 		Long result = null;
-		if ( data != null && (offset + 1) < data.length ) {
+		if (data != null && (offset + 1) < data.length) {
 			result = ((long) ((data[offset] & 0xFFFF) << 16) | (long) (data[offset + 1] & 0xFFFF));
 		}
 		return result;

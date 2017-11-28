@@ -25,6 +25,7 @@ package net.solarnetwork.node.io.modbus;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.Map;
+
 import net.wimpi.modbus.net.SerialConnection;
 
 /**
@@ -54,7 +55,7 @@ public class JamodModbusConnection implements ModbusConnection {
 		String portName;
 		try {
 			portName = connection.getSerialPort().getName();
-		} catch ( RuntimeException e ) {
+		} catch (RuntimeException e) {
 			portName = "UNKNOWN";
 		}
 		return "JamodModbusConnection{port=" + portName + ",unit=" + unitId + '}';
@@ -67,20 +68,24 @@ public class JamodModbusConnection implements ModbusConnection {
 
 	@Override
 	public void open() throws IOException {
-		if ( !connection.isOpen() ) {
-			try {
-				connection.open();
-			} catch ( IOException e ) {
-				throw e;
-			} catch ( Exception e ) {
-				throw new IOException(e);
-			}
+
+		if (!connection.isOpen()) {
+
+			// robert changes
+			// try {
+			// connection.open();
+			// } catch ( IOException e ) {
+			// throw e;
+			// } catch ( Exception e ) {
+			// throw new IOException(e);
+			// }
+
 		}
 	}
 
 	@Override
 	public void close() {
-		if ( connection.isOpen() ) {
+		if (connection.isOpen()) {
 			connection.close();
 		}
 	}

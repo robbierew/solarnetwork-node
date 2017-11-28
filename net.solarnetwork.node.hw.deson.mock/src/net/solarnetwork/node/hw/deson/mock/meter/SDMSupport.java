@@ -167,7 +167,8 @@ public class SDMSupport extends ModbusDeviceDatumDataSourceSupport {
 		} catch (RuntimeException e) {
 			log.debug("Error reading info: {}", e.getMessage());
 		}
-		return (msg == null ? "We are running mock missing mock Modbus" : msg);
+		return (msg == null ? "Seeing this message means you are running a mock SDMSupport but not getting mock data"
+				: msg);
 	}
 
 	private String getSampleMessage(SDMData data) {

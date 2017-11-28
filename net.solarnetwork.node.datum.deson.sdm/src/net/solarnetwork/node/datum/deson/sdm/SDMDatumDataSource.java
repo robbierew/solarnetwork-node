@@ -33,8 +33,9 @@ import net.solarnetwork.node.DatumDataSource;
 import net.solarnetwork.node.MultiDatumDataSource;
 import net.solarnetwork.node.domain.ACPhase;
 import net.solarnetwork.node.domain.GeneralNodeACEnergyDatum;
-import net.solarnetwork.node.hw.deson.mock.meter.SDMData;
-import net.solarnetwork.node.hw.deson.mock.meter.SDMSupport;
+import net.solarnetwork.node.hw.deson.mock.meter.DesonMockData;
+import net.solarnetwork.node.hw.deson.mock.meter.SDMData;//note using mock
+import net.solarnetwork.node.hw.deson.mock.meter.SDMSupport;//note using mock
 import net.solarnetwork.node.io.modbus.ModbusConnection;
 import net.solarnetwork.node.io.modbus.ModbusConnectionAction;
 import net.solarnetwork.node.settings.SettingSpecifier;
@@ -69,13 +70,22 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 	private long sampleCacheMs = 5000;
 
 	private SDMData getCurrentSample() {
-		SDMData currSample;
+
+		// robert changes initialised to null before blank
+
+		SDMData currSample = null;
 		if (isCachedSampleExpired()) {
 			try {
+
 				currSample = performAction(new ModbusConnectionAction<SDMData>() {
 
 					@Override
 					public SDMData doWithConnection(ModbusConnection conn) throws IOException {
+
+						// robert changes
+						conn = DesonMockData.CONN;
+						//
+
 						if (sample.getControlDataTimestamp() <= 0) {
 							// we need to know what kind of meter we are dealing
 							// with
@@ -91,6 +101,7 @@ public class SDMDatumDataSource extends SDMSupport implements DatumDataSource<Ge
 				}
 				log.debug("Read SDM data: {}", currSample);
 			} catch (IOException e) {
+
 				throw new RuntimeException("Communication problem reading from Modbus device " + modbusNetwork(), e);
 			}
 		} else {
