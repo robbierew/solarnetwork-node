@@ -1,38 +1,42 @@
-console.log("script is running");
-var testnum = 0;
+
+//debug to ensure script loads
+console.log("robert's graph script loaded");
+
+//maps the current data value with the sourceId
 var datamap = {};
-//var initialised = false;
+
+//a record of all sourceIds we are graphing
 var graphs = [];
 
+//when a new datum comes in this handler gets called
 var handler = function handleMessage(msg) {
 	
 	var datum = JSON.parse(msg.body).data;
-	testnum=datum.voltage;
+
+	//map the sourceId to the current reading
 	datamap[datum.sourceId] = datum.voltage;
+	
+	//if we have not seen this sourceId before we need to graph it
 	if (graphs.indexOf(datum.sourceId)==-1){
+		
 		graphs.push(datum.sourceId);
 		graphinit(datum.sourceId);
-		//initialised = true;
+
 	}
-	console.log("message handled");
-	console.log(datum.voltage);
 };
 
+//creates a new graph looking for data from the sourceId
 function graphinit(source){
 
 
-    var random = d3.random.normal(0, .5);
-
     var n = 243,//how many sample points to have on the graph
-        duration = 1000,//time for each sample (will remove when I set up entry)
-        now = new Date(Date.now() - duration),//not sure why -duration is there?
+        duration = 1000,//time for the animation 
+        now = new Date(Date.now() -duration),//not sure what the -duration is for
 
-        //best guess create an array of n elements and map them all to zero initaly
-        //d3.range(n).map(random);
-
-        //this seems clearer
-        data = new Array(n).fill(testnum);
-
+        //prefill the array with the first reading (might change in future)
+        data = new Array(n).fill(datamap[source]);
+  
+    //positional styling for the graph
     var margin = { top: 10, right: 0, bottom: 20, left: 60 },
         width = 960 - margin.right,
         height = 120 - margin.top - margin.bottom;
@@ -45,11 +49,13 @@ function graphinit(source){
     var y = d3.scale.linear()
         .range([height, 0]);
 
+    //draws the line for the graph (not sure how this code works at this stage)
     var line = d3.svg.line()
         .interpolate("basis")
         .x(function (d, i) { return x(now - (n - 1 - i) * duration); })
         .y(function (d, i) { return y(d); });
 
+    //finds the location on the main page where graphs are to be placed and adds one
     var p = d3.select(".test2").append("p").text(source);
     var svg = p.append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -58,12 +64,6 @@ function graphinit(source){
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
-//    var svg = d3.select(".test2").append("p").append("svg")
-//    	.attr("width", width + margin.left + margin.right)
-//    	.attr("height", height + margin.top + margin.bottom)
-//    	.style("margin-left", margin.left + "px")
-//    	.append("g")
-//    	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
     svg.append("defs").append("clipPath")
         .attr("id", "clip")
@@ -89,7 +89,7 @@ function graphinit(source){
         .duration(duration)
         .ease("linear");
 
-
+    //causes the animation of the graph to progress once called it will call itself again
     function tick() {
         transition = transition.each(function () {
 
@@ -121,6 +121,8 @@ function graphinit(source){
 
         }).transition().each("start", function () { tick() });
     };
+    
+    //start animating the graph
     tick();
 }
 
