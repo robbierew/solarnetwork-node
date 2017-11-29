@@ -1,19 +1,24 @@
 console.log("script is running");
 var testnum = 0;
-var initialised = false;
+var datamap = {};
+//var initialised = false;
+var graphs = [];
+
 var handler = function handleMessage(msg) {
 	
 	var datum = JSON.parse(msg.body).data;
 	testnum=datum.voltage;
-	if (!initialised){
-		graphinit();
-		initialised = true;
+	datamap[datum.sourceId] = datum.voltage;
+	if (graphs.indexOf(datum.sourceId)==-1){
+		graphs.push(datum.sourceId);
+		graphinit(datum.sourceId);
+		//initialised = true;
 	}
 	console.log("message handled");
-	console.log(datum.apparentPower);
+	console.log(datum.voltage);
 };
 
-function graphinit(){
+function graphinit(source){
 
 
     var random = d3.random.normal(0, .5);
@@ -45,13 +50,21 @@ function graphinit(){
         .x(function (d, i) { return x(now - (n - 1 - i) * duration); })
         .y(function (d, i) { return y(d); });
 
-    var svg = d3.select(".test2").append("p").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .style("margin-left", margin.left + "px")
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+    var p = d3.select(".test2").append("p").text(source);
+    var svg = p.append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .style("margin-left", margin.left + "px")
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+//    var svg = d3.select(".test2").append("p").append("svg")
+//    	.attr("width", width + margin.left + margin.right)
+//    	.attr("height", height + margin.top + margin.bottom)
+//    	.style("margin-left", margin.left + "px")
+//    	.append("g")
+//    	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
     svg.append("defs").append("clipPath")
         .attr("id", "clip")
         .append("rect")
@@ -86,7 +99,7 @@ function graphinit(){
             y.domain([d3.min(data), d3.max(data)]);//how to stretch the data leave the 0
 
             //put a data point on the graph
-            data.push(testnum);
+            data.push(datamap[source]);
 
             // redraw the line
             svg.select(".line")
@@ -110,7 +123,7 @@ function graphinit(){
     };
     tick();
 }
-var topic = SolarNode.WebSocket.topicNameWithWildcardSuffix('/topic/datum/*', null);
 
-//d3.select("body").selectAll.text("new text");
+//subscribe to get datums as they come, when a datum arrives it runs the handler
+var topic = SolarNode.WebSocket.topicNameWithWildcardSuffix('/topic/datum/*', null);
 SolarNode.WebSocket.subscribeToTopic(topic, handler);
