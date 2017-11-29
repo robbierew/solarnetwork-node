@@ -35,7 +35,7 @@
 	/js/new-node.js
 	/js/plugins.js
 	/js/d3.js
-	/js/robertTests.js
+	/js/graph-data.js
 </pack:script>
 <sec:authorize access="!hasRole('ROLE_USER')">
 	<setup:resources type="application/javascript"/>

@@ -61,7 +61,8 @@ function graphinit(source){
         .y(function (d, i) { return y(d); });
 
     //finds the location on the main page where graphs are to be placed and adds one
-    var p = d3.select(".test2").append("p").text(source);
+    //d3.select(".graphpoint").text("");
+    var p = d3.select(".graphpoint").append("p").text(source);
     var svg = p.append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)

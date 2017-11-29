@@ -74,8 +74,8 @@
 </section>
 
 <section id="datum-activity" class="hide">
-	<h2 class="robertTest">Test Message</h2>
-	<p class="test2"></p>
+	<h2>Datum Graphs</h2>
+	<p class="graphpoint"></p>
 	<h2><fmt:message key="datum.activity.title"/></h2>	
 	<p><fmt:message key="datum.activity.intro"/></p>
 	<table class="table datum-activity">
