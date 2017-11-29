@@ -13,16 +13,21 @@ var handler = function handleMessage(msg) {
 	
 	var datum = JSON.parse(msg.body).data;
 
-	//map the sourceId to the current reading
-	datamap[datum.sourceId] = datum.voltage;
-	
-	//if we have not seen this sourceId before we need to graph it
-	if (graphs.indexOf(datum.sourceId)==-1){
+	//check that the datum has a reading
+	if (datum.voltage != undefined){
+		//map the sourceId to the current reading
+		datamap[datum.sourceId] = datum.voltage;
 		
-		graphs.push(datum.sourceId);
-		graphinit(datum.sourceId);
+		//if we have not seen this sourceId before we need to graph it
+		if (graphs.indexOf(datum.sourceId)==-1){
+			
+			graphs.push(datum.sourceId);
+			graphinit(datum.sourceId);
 
+		}
 	}
+	
+	
 };
 
 //creates a new graph looking for data from the sourceId
