@@ -51,13 +51,14 @@ public class DesonMockData {
 		importantAddr.add(SDM120Data.ADDR_DATA_APPARENT_POWER);
 		importantAddr.add(SDM120Data.ADDR_DATA_ACTIVE_ENERGY_IMPORT_TOTAL);
 		importantAddr.add(SDM120Data.ADDR_DATA_POWER_FACTOR);
+		importantAddr.add(SDM120Data.ADDR_DATA_V_NEUTRAL);
 
 		for (Integer i : importantAddr) {
 			// MSB gets less of a shift
-			copy[i] = copy[i] + (int) (2 * Math.sin(Math.random() * Math.PI));
+			copy[i] = copy[i] + (int) (4 * Math.sin(Math.random() * 2 * Math.PI));
 
 			// we read the ajancent address aswell so give it a look
-			copy[i + 1] = copy[i + 1] + (int) (12 * Math.sin(Math.random() * Math.PI));
+			copy[i + 1] = copy[i + 1] + (int) (30 * Math.sin(Math.random() * 2 * Math.PI));
 		}
 
 		return copy;
