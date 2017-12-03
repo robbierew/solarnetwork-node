@@ -16,7 +16,7 @@ import net.solarnetwork.node.settings.SettingSpecifierProvider;
 import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
 import net.solarnetwork.node.settings.support.BasicToggleSettingSpecifier;
 
-public class MockDesonDatumSource implements DatumDataSource<GeneralNodeACEnergyDatum>, SettingSpecifierProvider {
+public class MockEnergyMeterDatumSource implements DatumDataSource<GeneralNodeACEnergyDatum>, SettingSpecifierProvider {
 
 	@Override
 	public String getUID() {
@@ -151,7 +151,7 @@ public class MockDesonDatumSource implements DatumDataSource<GeneralNodeACEnergy
 
 	@Override
 	public String getSettingUID() {
-		return "net.solarnetwork.node.hw.deson.mock2.mockdeson";
+		return "net.solarnetwork.node.hw.energymeter.mock";
 	}
 
 	@Override
@@ -170,7 +170,7 @@ public class MockDesonDatumSource implements DatumDataSource<GeneralNodeACEnergy
 
 	@Override
 	public List<SettingSpecifier> getSettingSpecifiers() {
-		MockDesonDatumSource defaults = new MockDesonDatumSource();
+		MockEnergyMeterDatumSource defaults = new MockEnergyMeterDatumSource();
 		List<SettingSpecifier> results = new ArrayList<SettingSpecifier>(1);
 		results.add(new BasicTextFieldSettingSpecifier("sourceId", defaults.sourceId));
 		results.add(new BasicTextFieldSettingSpecifier("baseReading", defaults.baseReading));

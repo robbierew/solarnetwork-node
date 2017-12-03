@@ -23,7 +23,7 @@
 
 	<!-- support localized strings for the settings in the GUI -->
 	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-		<property name="basenames" value="net.solarnetwork.node.hw.deson.mock2.MockDesonDatumSource"/>
+		<property name="basenames" value="net.solarnetwork.node.hw.energymeter.mock.MockEnergyMeterDatumSource"/>
 	</bean>
 
 	<!-- support localized strings for the periodic job settings in the GUI -->
@@ -32,25 +32,25 @@
 		<property name="delegate" ref="messageSource"/>
 	</bean>
 
-	<!-- publish a "component factory" so our Deson Mock appears in the settings GUI -->
+	<!-- publish a "component factory" so our EnergyMeter Mock appears in the settings GUI -->
 	<service interface="net.solarnetwork.node.settings.SettingSpecifierProviderFactory">
 		<bean class="net.solarnetwork.node.settings.support.BasicSettingSpecifierProviderFactory">
-			<property name="displayName" value="Deson Mock 2"/>
-			<property name="factoryUID" value="net.solarnetwork.node.hw.deson.mock2.mockdeson"/>
+			<property name="displayName" value="EnergyMeter Mock"/>
+			<property name="factoryUID" value="net.solarnetwork.node.hw.energymeter.mock"/>
 			<property name="messageSource" ref="messageSource"/>
 		</bean>
 	</service>
 
-	<!-- publish a "service factory" that each Mock Deson Inverter component instance can be
+	<!-- publish a "service factory" that each Mock Energy Meter Inverter component instance can be
 	     configured in the GUI, along with a periodic job to collect datum from it -->
-	<osgix:managed-service-factory factory-pid="net.solarnetwork.node.hw.deson.mock2.mockdeson" autowire-on-update="true">
+	<osgix:managed-service-factory factory-pid="net.solarnetwork.node.hw.energymeter.mock" autowire-on-update="true">
 		<osgix:interfaces>
 			<beans:value>net.solarnetwork.node.job.ManagedTriggerAndJobDetail</beans:value>
 			<beans:value>net.solarnetwork.node.job.ServiceProvider</beans:value>
 			<beans:value>net.solarnetwork.node.settings.SettingSpecifierProvider</beans:value>
 		</osgix:interfaces>
 		<osgix:service-properties>
-			<beans:entry key="settingPid" value="net.solarnetwork.node.hw.deson.mock2.mockdeson"/>
+			<beans:entry key="settingPid" value="net.solarnetwork.node.hw.energymeter.mock"/>
 		</osgix:service-properties>
 		<bean class="net.solarnetwork.node.job.SimpleManagedTriggerAndJobDetail">
 
@@ -58,14 +58,14 @@
 			     we define a cron style trigger, that by default runs once/minute -->
 			<property name="trigger">
 				<bean class="net.solarnetwork.node.job.RandomizedCronTriggerFactoryBean">
-					<property name="name" value="mockdesonPowerDatumLoggerTrigger"/>
+					<property name="name" value="mockPowerDatumLoggerTrigger"/>
 					<property name="cronExpression" value="5 * * * * ?"/>
 					<property name="misfireInstructionName" value="MISFIRE_INSTRUCTION_DO_NOTHING"/>
 					<property name="randomSecond" value="true"/>
 				</bean>
 			</property>
 
-			<!-- we can also publish the MockDesonDatumDataSource instance itself as a service
+			<!-- we can also publish the MockEnergyMeterDatumDataSource instance itself as a service
 			     by configuring serviceProviderConfigurations here... this is optional but
 			     generally a good idea -->
 			<property name="serviceProviderConfigurations">
@@ -90,16 +90,16 @@
 			<!-- the jobDetail defines what job should be executed periodically by the
 			     trigger; here we define a  net.solarnetwork.node.job.DatumDataSourceManagedLoggerJob
 			     job which will invoke the readCurrentDatum() method on a DatumDataSource, which
-			     is what MockDesonDatumDataSource is! -->
+			     is what MockEnergyMeterDatumDataSource is! -->
 			<property name="jobDetail">
 				<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-					<property name="name" value="mockdesonPowerDatumLoggerJob"/>
+					<property name="name" value="mockPowerDatumLoggerJob"/>
 					<property name="jobClass" value="net.solarnetwork.node.job.DatumDataSourceManagedLoggerJob"/>
 					<property name="jobDataAsMap">
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao"/>
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.hw.deson.mock2.MockDesonDatumSource">
+								<bean class="net.solarnetwork.node.hw.energymeter.mock.MockEnergyMeterDatumSource">
 									<property name="messageSource" ref="jobMessageSource"/>
 								</bean>
 							</entry>
