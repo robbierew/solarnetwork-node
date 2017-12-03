@@ -11,10 +11,6 @@
         stroke-width: 1.5px;
 
     }
-
-    p#test {
-        margin-left: 100px;
-    }
 </style>
 <p class="lead">
 	<fmt:message key='home.intro-loggedin'>

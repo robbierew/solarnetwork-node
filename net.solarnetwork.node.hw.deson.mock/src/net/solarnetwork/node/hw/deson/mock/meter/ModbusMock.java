@@ -7,6 +7,14 @@ import java.util.Map;
 
 import net.solarnetwork.node.io.modbus.ModbusConnection;
 
+/**
+ * 
+ * @author robert
+ * 
+ *         Mock modbusconnection that returns dummy data, dummy data is received
+ *         from DesonMockData
+ *
+ */
 public class ModbusMock implements ModbusConnection {
 
 	private final int unitId = 1;
@@ -32,6 +40,9 @@ public class ModbusMock implements ModbusConnection {
 
 	}
 
+	/**
+	 * tbh I don't know what this is for
+	 */
 	@Override
 	public BitSet readDiscreetValues(Integer[] addresses, int count) {
 		return new BitSet(5);
@@ -42,6 +53,9 @@ public class ModbusMock implements ModbusConnection {
 		return true;
 	}
 
+	/**
+	 * maps the dummy values
+	 */
 	@Override
 	public Map<Integer, Integer> readInputValues(Integer[] addresses, int count) {
 		Map<Integer, Integer> data = new Hashtable<Integer, Integer>();
