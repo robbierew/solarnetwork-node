@@ -16,6 +16,14 @@ public class MockBattery {
 		setDraw(0);
 	}
 
+	public void setMax(double maxcapacity) {
+		// you cannot have no or negative capacity keep current value if
+		// argument is invalid
+		if (maxcapacity > 0) {
+			this.maxcapacity = maxcapacity;
+		}
+	}
+
 	public void setCharge(double charge) {
 		// can't have negative charge,if that happens we keep the current value
 		if (charge >= 0) {
