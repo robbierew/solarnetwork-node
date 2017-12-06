@@ -2,50 +2,35 @@ package net.solarnetwork.node.datum.battery.mock;
 
 import java.util.List;
 
-import org.springframework.context.MessageSource;
-
 import net.solarnetwork.node.DatumDataSource;
 import net.solarnetwork.node.domain.GeneralNodeEnergyStorageDatum;
 import net.solarnetwork.node.settings.SettingSpecifier;
 import net.solarnetwork.node.settings.SettingSpecifierProvider;
+import net.solarnetwork.node.support.DatumDataSourceSupport;
 
-public class MockBatteryDatumDataSource
+public class MockBatteryDatumDataSource extends DatumDataSourceSupport
 		implements DatumDataSource<GeneralNodeEnergyStorageDatum>, SettingSpecifierProvider {
 
-	@Override
-	public String getUID() {
-		// TODO Auto-generated method stub
-		return "TODO";
-	}
+	private final String MAXCAP_DEFAULT = "10";
+	private final String POWERDRAW_DEFAULT = "1";
+	private final String CHARGE_DEFAULT = "10";
 
-	@Override
-	public String getGroupUID() {
-		// TODO Auto-generated method stub
-		return "TODOGROUP";
-	}
+	private MockBattery mb = new MockBattery(10);
 
 	@Override
 	public String getSettingUID() {
-		// TODO Auto-generated method stub
-		return null;
+		return "net.solarnetwork.node.datum.battery.mock";
 	}
 
 	@Override
 	public String getDisplayName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MessageSource getMessageSource() {
-		// TODO Auto-generated method stub
-		return null;
+		return "Mock Battery";
 	}
 
 	@Override
 	public List<SettingSpecifier> getSettingSpecifiers() {
-		// TODO Auto-generated method stub
-		return null;
+		List<SettingSpecifier> items = getIdentifiableSettingSpecifiers();
+		return items;
 	}
 
 	@Override

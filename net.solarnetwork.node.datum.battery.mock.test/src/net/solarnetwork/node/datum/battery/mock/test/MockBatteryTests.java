@@ -13,13 +13,14 @@ public class MockBatteryTests {
 	private long forcedTime;
 	private final long oneHour = 3600000L;
 	private final long twoHours = 7200000L;
+	private MockBattery mb;
 
 	// improved controllability of mockbattery by being able to control passage
 	// of time
 	private class TestBattery extends MockBattery {
 
-		public TestBattery(double maxcapacity, double maxdraw) {
-			super(maxcapacity, maxdraw);
+		public TestBattery(double maxcapacity) {
+			super(maxcapacity);
 
 		}
 
@@ -33,27 +34,22 @@ public class MockBatteryTests {
 	@Before
 	public void initTime() {
 		forcedTime = 0L;
+		mb = new TestBattery(10);
 	}
 
 	@Test
 	public void testNegativeContructor() {
 		try {
-			new TestBattery(-1, 1);
+			new TestBattery(-1);
 			fail();
 		} catch (IllegalArgumentException e) {
 
 		}
-		try {
-			new TestBattery(1, -1);
-			fail();
-		} catch (IllegalArgumentException e) {
 
-		}
 	}
 
 	@Test
 	public void testEmptyingBattery() {
-		MockBattery mb = new TestBattery(10, 10);
 		mb.setCharge(1);
 		mb.setDraw(1);
 		forcedTime = oneHour;
@@ -65,7 +61,6 @@ public class MockBatteryTests {
 
 	@Test
 	public void testDrawOnEmptyBattery() {
-		MockBattery mb = new TestBattery(10, 10);
 		mb.setCharge(0);
 		mb.setDraw(1);
 		assertEquals(0.0, (Object) mb.readDraw());
@@ -75,7 +70,6 @@ public class MockBatteryTests {
 
 	@Test
 	public void testFullyChargingBattery() {
-		MockBattery mb = new TestBattery(10, 10);
 		mb.setCharge(9);
 		mb.setDraw(-1);
 		forcedTime = oneHour;
@@ -87,7 +81,6 @@ public class MockBatteryTests {
 
 	@Test
 	public void testDrawOnFullBattery() {
-		MockBattery mb = new TestBattery(10, 10);
 		mb.setCharge(10);
 		mb.setDraw(-1);
 		// can't charge full battery
@@ -98,7 +91,6 @@ public class MockBatteryTests {
 
 	@Test
 	public void testChangingDrawLevelsBetweenReads() {
-		MockBattery mb = new TestBattery(10, 10);
 		mb.setCharge(10);
 		mb.setDraw(1);
 		forcedTime = oneHour;

@@ -4,16 +4,14 @@ public class MockBattery {
 	private double maxcapacity;
 	private double charge;
 	private double draw;
-	private double maxdraw;
 	private long lastsample;
 
-	public MockBattery(double maxcapacity, double maxdraw) {
-		if (maxcapacity < 0 || maxdraw < 0) {
+	public MockBattery(double maxcapacity) {
+		if (maxcapacity < 0) {
 			throw new IllegalArgumentException();
 		}
 		this.lastsample = readTime();
 		this.maxcapacity = maxcapacity;
-		this.maxdraw = maxdraw;
 		setCharge(0);
 		setDraw(0);
 	}
@@ -68,9 +66,7 @@ public class MockBattery {
 
 	public void setDraw(double draw) {
 		readCharge();
-		if (Math.abs(draw) <= this.maxdraw) {
-			this.draw = draw;
-		}
+		this.draw = draw;
 	}
 
 	public long readTime() {
