@@ -56,6 +56,7 @@ public class MockBatteryDatumDataSource extends DatumDataSourceSupport
 		GeneralNodeEnergyStorageDatum datum = new GeneralNodeEnergyStorageDatum();
 		datum.setAvailableEnergy((long) mb.readCharge());
 		datum.setAvailableEnergyPercentage(mb.percentageCapacity());
+
 		return datum;
 
 	}
