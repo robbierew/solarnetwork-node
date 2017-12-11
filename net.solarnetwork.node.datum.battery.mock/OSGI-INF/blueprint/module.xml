@@ -31,6 +31,11 @@
 		<property name="prefix" value="datumDataSource."/>
 		<property name="delegate" ref="messageSource"/>
 	</bean>
+	
+	<bean id="eventAdmin" class="net.solarnetwork.util.DynamicServiceTracker">
+		<property name="bundleContext" ref="bundleContext"/>
+		<property name="serviceClassName" value="org.osgi.service.event.EventAdmin"/>
+	</bean>
 
 	<!-- publish a "component factory" so our Foobar Inverter appears in the settings GUI -->
 	<service interface="net.solarnetwork.node.settings.SettingSpecifierProviderFactory">
@@ -81,6 +86,7 @@
 									<entry key="datumClassName" value="net.solarnetwork.node.domain.EnergyDatum"/>
 								</map>
 							</property>
+							
 						</bean>
 					</entry>
 				</map>
@@ -102,6 +108,17 @@
 									<property name="messageSource" ref="jobMessageSource"/>
 								</bean>
 							</entry>
+							<property name="consumptionDataSource">
+										<bean class="net.solarnetwork.util.DynamicServiceTracker">
+											<property name="bundleContext" ref="bundleContext"/>
+											<property name="serviceClassName" value="net.solarnetwork.node.DatumDataSource"/>
+											<property name="propertyFilters">
+												<map>
+													<entry key="UID" value="Main"/>
+												</map>
+											</property>
+										</bean>	
+							</property>
 						</map>
 					</property>
 				</bean>
