@@ -63,6 +63,7 @@
 			     we define a cron style trigger, that by default runs once/minute -->
 			<property name="trigger">
 				<bean class="net.solarnetwork.node.job.RandomizedCronTriggerFactoryBean">
+					<property name="name" value="dPowerDatumLoggerTrigger"/>
 					<property name="cronExpression" value="5 * * * * ?"/>
 					<property name="misfireInstructionName" value="MISFIRE_INSTRUCTION_DO_NOTHING"/>
 					<property name="randomSecond" value="true"/>
@@ -83,7 +84,7 @@
 							</property>
 							<property name="properties">
 								<map>
-									<entry key="datumClassName" value="net.solarnetwork.node.domain.EnergyDatum"/>
+									<entry key="datumClassName" value="net.solarnetwork.node.domain.EnergyStorageDatum"/>
 								</map>
 							</property>
 							
@@ -96,7 +97,7 @@
 			     trigger; here we define a  net.solarnetwork.node.job.DatumDataSourceManagedLoggerJob
 			     job which will invoke the readCurrentDatum() method on a DatumDataSource, which
 			     is what FoobarDatumDataSource is! -->
-			<property name="jobDetail">
+			<!--  <property name="jobDetail">
 				<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 					<property name="name" value="foobarPowerDatumLoggerJob"/>
 					<property name="jobClass" value="net.solarnetwork.node.job.DatumDataSourceManagedLoggerJob"/>
@@ -108,21 +109,39 @@
 									<property name="messageSource" ref="jobMessageSource"/>
 								</bean>
 							</entry>
-							<property name="consumptionDataSource">
-										<bean class="net.solarnetwork.util.DynamicServiceTracker">
-											<property name="bundleContext" ref="bundleContext"/>
-											<property name="serviceClassName" value="net.solarnetwork.node.DatumDataSource"/>
-											<property name="propertyFilters">
-												<map>
-													<entry key="UID" value="Main"/>
-												</map>
-											</property>
-										</bean>	
-							</property>
 						</map>
 					</property>
 				</bean>
-			</property>
+			</property>-->
+			
+			<property name="jobDetail">
+  <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+    <property name="name" value="mockbatteryConsumptionDatumLoggerJob"/>
+    <property name="jobClass" value="net.solarnetwork.node.job.DatumDataSourceManagedLoggerJob"/>
+    <property name="jobDataAsMap">
+      <map>
+        <entry key="datumDao" value-ref="generalNodeDatumDao"/>
+        <entry key="datumDataSource">
+          <bean class="net.solarnetwork.node.datum.battery.mock.MockBatteryDatumDataSource">
+            <property name="messageSource" ref="messageSource"/>
+            <property name="consumptionDatums">
+              <bean class="net.solarnetwork.util.DynamicServiceTracker">
+                <property name="bundleContext" ref="bundleContext"/>
+                <property name="serviceClassName" value="net.solarnetwork.node.DatumDataSource"/>
+                <property name="propertyFilters">
+                  <map>
+                    <entry key="UID" value="Main"/>
+                  </map>
+                </property>
+
+              </bean>
+            </property>
+          </bean>
+        </entry>
+      </map>
+    </property>
+  </bean>
+</property>
 		</bean>
 	</osgix:managed-service-factory>
 

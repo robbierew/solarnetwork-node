@@ -1,10 +1,10 @@
-package net.solarnetwork.node.datum.battery.mock;
+package net.solarnetwork.node.testing.DRTests;
 
 import java.util.List;
 
 import net.solarnetwork.node.DatumDataSource;
 import net.solarnetwork.node.domain.EnergyDatum;
-import net.solarnetwork.node.domain.GeneralNodeEnergyStorageDatum;
+import net.solarnetwork.node.domain.GeneralNodeEnergyDatum;
 import net.solarnetwork.node.settings.SettingSpecifier;
 import net.solarnetwork.node.settings.SettingSpecifierProvider;
 import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
@@ -12,7 +12,7 @@ import net.solarnetwork.node.support.DatumDataSourceSupport;
 import net.solarnetwork.util.OptionalServiceCollection;
 
 public class MockBatteryDatumDataSource extends DatumDataSourceSupport
-		implements DatumDataSource<GeneralNodeEnergyStorageDatum>, SettingSpecifierProvider {
+		implements DatumDataSource<GeneralNodeEnergyDatum>, SettingSpecifierProvider {
 
 	private final String MAXCAP_DEFAULT = "10";
 	private final String POWERDRAW_DEFAULT = "1";
@@ -21,16 +21,16 @@ public class MockBatteryDatumDataSource extends DatumDataSourceSupport
 	private boolean flag2 = false;
 	private Integer sum;
 	private MockBattery mb = new MockBattery(10);
-	private OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> consumptionDatums;
+	private OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> powerDatums;
 
 	// initaliser block to have battery loaded with default values
-	{
-
-		setMaxcap(MAXCAP_DEFAULT);
-		setPowerDraw(POWERDRAW_DEFAULT);
-		setCharge(CHARGE_DEFAULT);
-
-	}
+	// {
+	//
+	// setMaxcap(MAXCAP_DEFAULT);
+	// setPowerDraw(POWERDRAW_DEFAULT);
+	// setCharge(CHARGE_DEFAULT);
+	//
+	// }
 
 	@Override
 	public String getSettingUID() {
@@ -53,9 +53,8 @@ public class MockBatteryDatumDataSource extends DatumDataSourceSupport
 		return items;
 	}
 
-	public void setConsumptionDatums(
-			OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> consumptionDatums) {
-		this.consumptionDatums = consumptionDatums;
+	public void setPowerDatums(OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> powerDatums) {
+		this.powerDatums = powerDatums;
 
 		sumWattage();
 
@@ -64,29 +63,29 @@ public class MockBatteryDatumDataSource extends DatumDataSourceSupport
 	private void sumWattage() {
 		sum = 0;
 		flag = true;
-		for (DatumDataSource<? extends EnergyDatum> dds : consumptionDatums.services()) {
+		for (DatumDataSource<? extends EnergyDatum> dds : powerDatums.services()) {
 			sum += dds.readCurrentDatum().getWatts();
 			flag2 = true;
 		}
 		mb.setCharge(sum.doubleValue());
 	}
 
-	public OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> getConsumptionDatums() {
-		return consumptionDatums;
+	public OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> getPowerDatums() {
+		return powerDatums;
 	}
 
 	@Override
-	public Class<? extends GeneralNodeEnergyStorageDatum> getDatumType() {
-		return GeneralNodeEnergyStorageDatum.class;
+	public Class<? extends GeneralNodeEnergyDatum> getDatumType() {
+		return GeneralNodeEnergyDatum.class;
 	}
 
 	@Override
-	public GeneralNodeEnergyStorageDatum readCurrentDatum() {
+	public GeneralNodeEnergyDatum readCurrentDatum() {
 
-		GeneralNodeEnergyStorageDatum datum = new GeneralNodeEnergyStorageDatum();
-		datum.setAvailableEnergy((long) mb.readCharge());
-		datum.setAvailableEnergyPercentage(mb.percentageCapacity());
-		if (consumptionDatums == null) {
+		GeneralNodeEnergyDatum datum = new GeneralNodeEnergyDatum();
+		// datum.setAvailableEnergy((long) mb.readCharge());
+		// datum.setAvailableEnergyPercentage(mb.percentageCapacity());
+		if (powerDatums == null) {
 			datum.putStatusSampleValue("reading", false);
 
 		} else {

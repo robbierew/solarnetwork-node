@@ -31,6 +31,11 @@
 		<property name="prefix" value="datumDataSource."/>
 		<property name="delegate" ref="messageSource"/>
 	</bean>
+	
+	<bean id = "eventAdmin" class="net.solarnetwork.util.DynamicServiceTracker">
+		<property name="bundleContext" ref="bundleContext"/>
+		<property name="serviceClassName" value="org.osgi.service.event.EventAdmin"/>
+	</bean>
 
 	<!-- publish a "component factory" so our Foobar Inverter appears in the settings GUI -->
 	<service interface="net.solarnetwork.node.settings.SettingSpecifierProviderFactory">
@@ -92,21 +97,33 @@
 			     job which will invoke the readCurrentDatum() method on a DatumDataSource, which
 			     is what FoobarDatumDataSource is! -->
 			<property name="jobDetail">
-				<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-					<property name="name" value="drtestingPowerDatumLoggerJob"/>
-					<property name="jobClass" value="net.solarnetwork.node.job.DatumDataSourceManagedLoggerJob"/>
-					<property name="jobDataAsMap">
-						<map>
-							<entry key="datumDao" value-ref="generalNodeDatumDao"/>
-							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.testing.DRTests.DRTesting">
-									<property name="messageSource" ref="jobMessageSource"/>
-								</bean>
-							</entry>
-						</map>
-					</property>
-				</bean>
-			</property>
+  <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+    <property name="name" value="drtestingPowerDatumLoggerJob"/>
+    <property name="jobClass" value="net.solarnetwork.node.job.DatumDataSourceManagedLoggerJob"/>
+    <property name="jobDataAsMap">
+      <map>
+        <entry key="datumDao" value-ref="generalNodeDatumDao"/>
+        <entry key="datumDataSource">
+          <bean class="net.solarnetwork.node.testing.DRTests.DRTesting">
+            <property name="messageSource" ref="messageSource"/>
+            <property name="powerDatums">
+              <bean class="net.solarnetwork.util.DynamicServiceTracker">
+                <property name="bundleContext" ref="bundleContext"/>
+                <property name="serviceClassName" value="net.solarnetwork.node.DatumDataSource"/>
+                <property name="propertyFilters">
+                  <map>
+                    <entry key="UID" value="Main"/>
+                  </map>
+                </property>
+
+              </bean>
+            </property>
+          </bean>
+        </entry>
+      </map>
+    </property>
+  </bean>
+</property>
 		</bean>
 	</osgix:managed-service-factory>
 
