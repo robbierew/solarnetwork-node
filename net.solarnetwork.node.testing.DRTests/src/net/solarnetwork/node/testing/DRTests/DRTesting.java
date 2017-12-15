@@ -1,11 +1,15 @@
 package net.solarnetwork.node.testing.DRTests;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import net.solarnetwork.node.DatumDataSource;
 import net.solarnetwork.node.domain.EnergyDatum;
 import net.solarnetwork.node.domain.GeneralNodeEnergyDatum;
+import net.solarnetwork.node.reactor.Instruction;
+import net.solarnetwork.node.reactor.InstructionHandler;
+import net.solarnetwork.node.reactor.support.BasicInstruction;
 import net.solarnetwork.node.settings.SettingSpecifier;
 import net.solarnetwork.node.settings.SettingSpecifierProvider;
 import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
@@ -22,6 +26,7 @@ public class DRTesting extends DatumDataSourceSupport
 	private Double charge = 10.0;
 
 	private MockBattery mb = new MockBattery(maxCharge);
+	private Collection<InstructionHandler> instructionHandlers;
 
 	@Override
 	public Class<? extends GeneralNodeEnergyDatum> getDatumType() {
@@ -44,6 +49,11 @@ public class DRTesting extends DatumDataSourceSupport
 			datum.putStatusSampleValue("Got info?", "no");
 		} else {
 			makeStats(datum);
+		}
+		for (InstructionHandler i : instructionHandlers) {
+			i.processInstruction(new BasicInstruction(InstructionHandler.TOPIC_SHED_LOAD, new Date(),
+					Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null));
+
 		}
 		datum.putStatusSampleValue("Magic", magicflag);
 		datum.putInstantaneousSampleValue("Battery Power", mb.readCharge());
@@ -120,4 +130,13 @@ public class DRTesting extends DatumDataSourceSupport
 	public Double getBatteryCharge() {
 		return this.charge;
 	}
+
+	public void setInstructionHandlers(Collection<InstructionHandler> instructionHandlers) {
+		this.instructionHandlers = instructionHandlers;
+	}
+
+	public Collection<InstructionHandler> getInstructionHandlers() {
+		return instructionHandlers;
+	}
+
 }

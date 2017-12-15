@@ -14,6 +14,9 @@
 		http://www.springframework.org/schema/context
 		http://www.springframework.org/schema/context/spring-context-4.2.xsd">
 
+	<reference-list id="instructionHandlers" availability="optional"
+		interface="net.solarnetwork.node.reactor.InstructionHandler"/>
+	
 	<!-- provides access to local database storage for our datum -->
 	<bean id="generalNodeDatumDao" class="net.solarnetwork.util.DynamicServiceTracker">
 		<property name="bundleContext" ref="bundleContext"/>
@@ -106,6 +109,7 @@
         <entry key="datumDataSource">
           <bean class="net.solarnetwork.node.testing.DRTests.DRTesting">
             <property name="messageSource" ref="messageSource"/>
+            <property name="instructionHandlers" ref="instructionHandlers"/>
             <property name="powerDatums">
               <bean class="net.solarnetwork.util.DynamicServiceTracker">
                 <property name="bundleContext" ref="bundleContext"/>

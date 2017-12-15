@@ -45,6 +45,10 @@
 		</bean>
 	</service>
 
+	<bean class="net.solarnetwork.node.testing.instructionTests.InstructionTest" id="testName">
+									<property name="instructionHandlers" ref="instructionHandlers"/>
+									<property name="messageSource" ref="jobMessageSource"/>
+								</bean>
 	<!-- publish a "service factory" that each Foobar Inverter component instance can be
 	     configured in the GUI, along with a periodic job to collect datum from it -->
 	<osgix:managed-service-factory factory-pid="net.solarnetwork.node.testing.instructionTests" autowire-on-update="true">
@@ -52,11 +56,12 @@
 			<beans:value>net.solarnetwork.node.job.ManagedTriggerAndJobDetail</beans:value>
 			<beans:value>net.solarnetwork.node.job.ServiceProvider</beans:value>
 			<beans:value>net.solarnetwork.node.settings.SettingSpecifierProvider</beans:value>
+			<beans:value>net.solarnetwork.node.reactor.InstructionHandler</beans:value>
 		</osgix:interfaces>
 		<osgix:service-properties>
 			<beans:entry key="settingPid" value="net.solarnetwork.node.testing.instructionTests"/>
 		</osgix:service-properties>
-		<bean class="net.solarnetwork.node.job.SimpleManagedTriggerAndJobDetail">
+		<bean class="net.solarnetwork.node.testing.instructionTests.JobDetailTest">
 
 			<!-- the trigger defines when the periodic job runs; in this case
 			     we define a cron style trigger, that by default runs once/minute -->
@@ -102,16 +107,16 @@
 					<property name="jobDataAsMap">
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao"/>
-							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.testing.instructionTests.InstructionTest">
-									<property name="instructionHandlers" ref="instructionHandlers"/>
-									<property name="messageSource" ref="jobMessageSource"/>
-								</bean>
-							</entry>
+							<entry key="datumDataSource" value-ref="testName"/>
+								
+							
 						</map>
 					</property>
 				</bean>
 			</property>
+			<property name="instructionSource" ref="testName"/>
+			
+			
 		</bean>
 	</osgix:managed-service-factory>
 

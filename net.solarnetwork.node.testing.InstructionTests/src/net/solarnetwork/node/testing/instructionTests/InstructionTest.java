@@ -1,21 +1,21 @@
 package net.solarnetwork.node.testing.instructionTests;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
+import net.solarnetwork.domain.NodeControlInfo;
 import net.solarnetwork.node.DatumDataSource;
+import net.solarnetwork.node.NodeControlProvider;
 import net.solarnetwork.node.domain.GeneralNodeEnergyDatum;
 import net.solarnetwork.node.reactor.Instruction;
 import net.solarnetwork.node.reactor.InstructionHandler;
 import net.solarnetwork.node.reactor.InstructionStatus.InstructionState;
-import net.solarnetwork.node.reactor.support.BasicInstruction;
 import net.solarnetwork.node.settings.SettingSpecifier;
 import net.solarnetwork.node.settings.SettingSpecifierProvider;
 import net.solarnetwork.node.support.DatumDataSourceSupport;
 
-public class InstructionTest extends DatumDataSourceSupport
-		implements DatumDataSource<GeneralNodeEnergyDatum>, SettingSpecifierProvider, InstructionHandler {
+public class InstructionTest extends DatumDataSourceSupport implements DatumDataSource<GeneralNodeEnergyDatum>,
+		SettingSpecifierProvider, InstructionHandler, NodeControlProvider {
 
 	private Collection<InstructionHandler> instructionHandlers;
 	private Boolean gotinstruction = false;
@@ -56,11 +56,7 @@ public class InstructionTest extends DatumDataSourceSupport
 			datum.setWatts(0);
 			// instructionHandlers.iterator().next().
 		}
-		for (InstructionHandler i : instructionHandlers) {
-			i.processInstruction(new BasicInstruction(InstructionHandler.TOPIC_SHED_LOAD, new Date(),
-					Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null));
 
-		}
 		datum.putStatusSampleValue("Got instruction?", gotinstruction);
 		// InstructionUtils.handleInstruction(instructionHandlers, new
 		// BasicInstruction(InstructionHandler.TOPIC_SHED_LOAD,
@@ -87,6 +83,18 @@ public class InstructionTest extends DatumDataSourceSupport
 	public InstructionState processInstruction(Instruction instruction) {
 		gotinstruction = true;
 		return InstructionState.Declined;
+	}
+
+	@Override
+	public List<String> getAvailableControlIds() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public NodeControlInfo getCurrentControlInfo(String controlId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
