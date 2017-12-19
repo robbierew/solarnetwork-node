@@ -1,4 +1,4 @@
-package net.solarnetwork.node.datum.battery.mock;
+package net.solarnetwork.node.demandresponse.battery;
 
 public class MockBattery {
 	private Double maxcapacity = null;
@@ -17,6 +17,8 @@ public class MockBattery {
 
 	public MockBattery() {
 
+		// TODO change how this works
+		this(10.0);
 	}
 
 	public void setMax(double maxcapacity) {

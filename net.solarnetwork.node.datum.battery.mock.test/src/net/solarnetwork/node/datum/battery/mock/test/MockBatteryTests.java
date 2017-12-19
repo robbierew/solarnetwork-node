@@ -98,4 +98,13 @@ public class MockBatteryTests {
 		forcedTime = twoHours;
 		assertEquals(7.0, (Object) mb.readCharge());
 	}
+
+	@Test
+	public void testResetWhenNewCharge() {
+		mb.setCharge(10);
+		mb.setDraw(2);
+		forcedTime = oneHour;
+		mb.setCharge(9);
+		assertEquals(9.0, (Object) mb.readCharge());
+	}
 }

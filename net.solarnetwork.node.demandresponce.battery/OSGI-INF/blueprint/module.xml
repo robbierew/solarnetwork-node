@@ -13,7 +13,6 @@
 		http://www.springframework.org/schema/context
 		http://www.springframework.org/schema/context/spring-context-4.2.xsd">
 
-
 	<reference-list id="instructionHandlers" availability="optional"
 		interface="net.solarnetwork.node.reactor.InstructionHandler" />
 
@@ -29,7 +28,7 @@
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basenames"
-			value="net.solarnetwork.node.testing.instructionTests.InstructionTest" />
+			value="net.solarnetwork.node.demandresponse.battery.DRBatterySettings" />
 	</bean>
 
 	<!-- support localized strings for the periodic job settings in the GUI -->
@@ -38,47 +37,74 @@
 		<property name="delegate" ref="messageSource" />
 	</bean>
 
+	<bean id="eventAdmin" class="net.solarnetwork.util.DynamicServiceTracker">
+		<property name="bundleContext" ref="bundleContext" />
+		<property name="serviceClassName" value="org.osgi.service.event.EventAdmin" />
+	</bean>
+
+
+
+	<bean id="DRBatterySettings"
+		class="net.solarnetwork.node.demandresponse.battery.DRBatterySettings">
+		<property name="MockBattery">
+			<bean class="net.solarnetwork.node.demandresponse.battery.MockBattery" />
+		</property>
+		<property name="messageSource" ref="messageSource" />
+		<property name="poweredDevices">
+			<bean class="net.solarnetwork.util.DynamicServiceTracker">
+				<property name="bundleContext" ref="bundleContext" />
+				<property name="serviceClassName" value="net.solarnetwork.node.DatumDataSource" />
+				<property name="propertyFilters">
+					<map>
+						<entry key="UID" value="Main" />
+					</map>
+				</property>
+
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="DRBattery" class="net.solarnetwork.node.demandresponse.battery.DRBattery">
+		<property name="DRBatterySettings" ref="DRBatterySettings" />
+		<property name="instructionHandlers" ref="instructionHandlers" />
+	</bean>
+
 	<!-- publish a "component factory" so our Foobar Inverter appears in the 
 		settings GUI -->
 	<service
 		interface="net.solarnetwork.node.settings.SettingSpecifierProviderFactory">
 		<bean
 			class="net.solarnetwork.node.settings.support.BasicSettingSpecifierProviderFactory">
-			<property name="displayName" value="Instruction Test" />
+			<property name="displayName" value="DR Battery" />
 			<property name="factoryUID"
-				value="net.solarnetwork.node.testing.instructionTests" />
+				value="net.solarnetwork.node.demandresponse.battery" />
 			<property name="messageSource" ref="messageSource" />
 		</bean>
 	</service>
 
-	<bean class="net.solarnetwork.node.testing.instructionTests.InstructionTest"
-		id="testName">
-		<property name="instructionHandlers" ref="instructionHandlers" />
-		<property name="messageSource" ref="jobMessageSource" />
-	</bean>
 	<!-- publish a "service factory" that each Foobar Inverter component instance 
 		can be configured in the GUI, along with a periodic job to collect datum 
 		from it -->
 	<osgix:managed-service-factory
-		factory-pid="net.solarnetwork.node.testing.instructionTests"
+		factory-pid="net.solarnetwork.node.demandresponse.battery"
 		autowire-on-update="true">
 		<osgix:interfaces>
 			<beans:value>net.solarnetwork.node.job.ManagedTriggerAndJobDetail</beans:value>
 			<beans:value>net.solarnetwork.node.job.ServiceProvider</beans:value>
 			<beans:value>net.solarnetwork.node.settings.SettingSpecifierProvider</beans:value>
-			<beans:value>net.solarnetwork.node.reactor.InstructionHandler</beans:value>
+			<beans:value>net.solarnetwork.node.reactor.FeedbackInstructionHandler</beans:value>
 		</osgix:interfaces>
 		<osgix:service-properties>
 			<beans:entry key="settingPid"
-				value="net.solarnetwork.node.testing.instructionTests" />
+				value="net.solarnetwork.node.demandresponse.battery" />
 		</osgix:service-properties>
-		<bean class="net.solarnetwork.node.testing.instructionTests.JobDetailTest">
+		<bean class="net.solarnetwork.node.demandresponse.battery.DRBattery">
 
 			<!-- the trigger defines when the periodic job runs; in this case we define 
 				a cron style trigger, that by default runs once/minute -->
 			<property name="trigger">
 				<bean class="net.solarnetwork.node.job.RandomizedCronTriggerFactoryBean">
-					<property name="name" value="foobarPowerDatumLoggerTrigger" />
+					<property name="name" value="dPowerDatumLoggerTrigger" />
 					<property name="cronExpression" value="5 * * * * ?" />
 					<property name="misfireInstructionName" value="MISFIRE_INSTRUCTION_DO_NOTHING" />
 					<property name="randomSecond" value="true" />
@@ -100,7 +126,8 @@
 							</property>
 							<property name="properties">
 								<map>
-									<entry key="datumClassName" value="net.solarnetwork.node.domain.EnergyDatum" />
+									<entry key="datumClassName"
+										value="net.solarnetwork.node.domain.EnergyStorageDatum" />
 								</map>
 							</property>
 						</bean>
@@ -114,22 +141,25 @@
 				which is what FoobarDatumDataSource is! -->
 			<property name="jobDetail">
 				<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-					<property name="name" value="foobarPowerDatumLoggerJob" />
+					<property name="name" value="drbatteryPowerDatumLoggerJob" />
 					<property name="jobClass"
 						value="net.solarnetwork.node.job.DatumDataSourceManagedLoggerJob" />
 					<property name="jobDataAsMap">
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
-							<entry key="datumDataSource" value-ref="testName" />
+							<entry key="datumDataSource">
+								<bean class="net.solarnetwork.node.demandresponse.battery.DRBatteryDatumDataSource">
+									<property name="DRBatterySettings" ref="DRBatterySettings"/>
+								</bean>
+							</entry>
+							<entry key="batterySettings" value-ref="DRBatterySettings"/>
+							
 
 
 						</map>
 					</property>
 				</bean>
 			</property>
-			<property name="instructionSource" ref="testName" />
-
-
 		</bean>
 	</osgix:managed-service-factory>
 
