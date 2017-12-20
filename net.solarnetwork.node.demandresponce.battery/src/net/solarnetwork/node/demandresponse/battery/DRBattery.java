@@ -2,8 +2,11 @@ package net.solarnetwork.node.demandresponse.battery;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Hashtable;
+import java.util.Map;
 
 import net.solarnetwork.node.job.SimpleManagedTriggerAndJobDetail;
+import net.solarnetwork.node.reactor.FeedbackInstructionHandler;
 import net.solarnetwork.node.reactor.Instruction;
 import net.solarnetwork.node.reactor.InstructionHandler;
 import net.solarnetwork.node.reactor.InstructionStatus;
@@ -15,26 +18,29 @@ import net.solarnetwork.node.reactor.support.BasicInstructionStatus;
  * @author robert
  *
  */
-public class DRBattery extends SimpleManagedTriggerAndJobDetail implements DRDevice {
+public class DRBattery extends SimpleManagedTriggerAndJobDetail
+		implements DRChargeableDevice, FeedbackInstructionHandler {
 	private DRBatterySettings settings;
 	private Collection<InstructionHandler> instructionHandlers;
 
 	@Override
 	public boolean handlesTopic(String topic) {
 		// instruction to shed load by a certain amount
-		if (topic.equals(InstructionHandler.TOPIC_SHED_LOAD)) {
-			return true;
-		}
-		// insrtuction to set load to a certain percentage of max
-		if (topic.equals(InstructionHandler.TOPIC_DEMAND_BALANCE)) {
-			return true;
-		}
-
-		// to be used for telling the battery whether charge or discharge
-		if (topic.equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
-			return true;
-		}
-		return false;
+		// TODO
+		return true;
+		// if (topic.equals(InstructionHandler.TOPIC_SHED_LOAD)) {
+		// return true;
+		// }
+		// // insrtuction to set load to a certain percentage of max
+		// if (topic.equals(InstructionHandler.TOPIC_DEMAND_BALANCE)) {
+		// return true;
+		// }
+		//
+		// // to be used for telling the battery whether charge or discharge
+		// if (topic.equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
+		// return true;
+		// }
+		// return false;
 	}
 
 	@Override
@@ -47,20 +53,28 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements DRDev
 	@Override
 	public InstructionStatus processInstructionWithFeedback(Instruction instruction) {
 		InstructionState state;
+		if (instruction.getTopic().equals("getDRDeviceInstance")) {
+			// for now lets just get this working
+			state = InstructionState.Completed;
+			Map<String, Object> map = new Hashtable<String, Object>(1);
+			map.put("instance", this);
+
+			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);
+			return status;
+			// DEBUG TODO
+			// settings.setBatteryCharge(5.0);
+		}
 
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SHED_LOAD)) {
-			String param = instruction.getParameterValue("shedAmount");
+			String param = instruction.getParameterValue(settings.getDrEngineName());
 			if (param != null) {
 				try {
 					double value = Double.parseDouble(param);
 					MockBattery battery = settings.getMockBattery();
 					double draw = battery.readDraw() - value;
-					if (value == 0.0) {
-						settings.setDrawOverride(false);
-					}
-					if (draw >= 0.0) {
-						battery.setDraw(0.0);
-						settings.setDrawOverride(true);
+					if (true) {
+						// TODO ensure maxdraw is met
+						battery.setCharge(value);
 						state = InstructionState.Completed;
 					} else {
 						state = InstructionState.Declined;
@@ -74,6 +88,11 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements DRDev
 			}
 		} else {
 			state = InstructionState.Declined;
+		}
+
+		if (state == InstructionState.Declined) {
+			MockBattery battery = settings.getMockBattery();
+			battery.setCharge(4);
 		}
 
 		InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date());
@@ -97,38 +116,66 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements DRDev
 		return instructionHandlers;
 	}
 
+	@Deprecated
 	private double batteryEnergyCost() {
-		return settings.getCost() / (settings.getCycles() * settings.getBatteryMaxCharge() * 2);
+		return settings.getBatteryCost() / (settings.getBatteryCycles() * settings.getBatteryMaxCharge() * 2);
 	}
 
 	@Override
 	public Integer getEnergyCost() {
 		// TODO Auto-generated method stub
-		return null;
+		try {
+			return (int) (settings.getBatteryCost()
+					/ (settings.getBatteryCycles() * settings.getBatteryMaxCharge() * 2));
+		} catch (RuntimeException e) {
+			return null;
+		}
+
 	}
 
 	@Override
 	public Integer getMaxPower() {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO fix this hack
+		return (int) (double) settings.getMaxDraw();
 	}
 
 	@Override
 	public Integer getMinPower() {
 		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean isToggleDevice() {
-		// TODO Auto-generated method stub
-		return false;
+		return 0;
 	}
 
 	@Override
 	public Integer getWatts() {
 		// TODO Auto-generated method stub
-		return null;
+		return (int) settings.getMockBattery().readDraw();
+	}
+
+	@Override
+	public Integer getCharge() {
+		// TODO fix this hack
+		return (int) settings.getMockBattery().readCharge();
+	}
+
+	@Override
+	public Integer getMaxCharge() {
+		// TODO fix this hack
+		return (int) (double) settings.getBatteryMaxCharge();
+	}
+
+	@Override
+	public String getUID() {
+		return settings.getUID();
+	}
+
+	@Override
+	public String getGroupUID() {
+		return settings.getGroupUID();
+	}
+
+	@Override
+	public Boolean isDischarging() {
+		return settings.getMockBattery().readDraw() < 0;
 	}
 
 }

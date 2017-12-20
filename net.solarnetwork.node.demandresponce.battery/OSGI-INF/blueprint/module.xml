@@ -63,12 +63,12 @@
 			</bean>
 		</property>
 	</bean>
-
+<!-- 
 	<bean id="DRBattery" class="net.solarnetwork.node.demandresponse.battery.DRBattery">
 		<property name="DRBatterySettings" ref="DRBatterySettings" />
 		<property name="instructionHandlers" ref="instructionHandlers" />
 	</bean>
-
+ -->
 	<!-- publish a "component factory" so our Foobar Inverter appears in the 
 		settings GUI -->
 	<service
@@ -160,6 +160,8 @@
 					</property>
 				</bean>
 			</property>
+			<property name="DRBatterySettings" ref="DRBatterySettings" />
+			<property name="instructionHandlers" ref="instructionHandlers" />
 		</bean>
 	</osgix:managed-service-factory>
 

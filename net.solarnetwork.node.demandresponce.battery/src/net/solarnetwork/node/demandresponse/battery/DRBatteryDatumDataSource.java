@@ -37,11 +37,6 @@ public class DRBatteryDatumDataSource implements DatumDataSource<GeneralNodeEner
 		// check we have access to configured settings
 		if (settings != null) {
 
-			// update the batterys draw
-			if (!settings.isDrawOverride()) {
-				calcBatteryDraw();
-			}
-
 			// create new datum
 			GeneralNodeEnergyStorageDatum datum = new GeneralNodeEnergyStorageDatum();
 			datum.setCreated(new Date());
@@ -66,6 +61,7 @@ public class DRBatteryDatumDataSource implements DatumDataSource<GeneralNodeEner
 	 * Looks at the datums from other plugins and reads their wattage reading.
 	 * This is the powerdraw the battery will have
 	 */
+	@Deprecated
 	private void calcBatteryDraw() {
 
 		Double sum = 0.0;

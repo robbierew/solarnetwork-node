@@ -24,3 +24,4 @@ Import-Package: net.solarnetwork.node;version="1.23.0",
  org.springframework.context.support;version="4.2.9.RELEASE",
  org.springframework.core;version="4.2.9.RELEASE",
  org.springframework.scheduling.quartz;version="4.2.9.RELEASE"
+Export-Package: net.solarnetwork.node.demandresponse.battery

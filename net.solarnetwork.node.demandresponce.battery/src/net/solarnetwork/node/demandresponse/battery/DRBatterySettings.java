@@ -19,7 +19,20 @@ public class DRBatterySettings extends DatumDataSourceSupport implements Setting
 	private Integer cost = 1000;
 	private Integer cycles = 10000;
 
+	private String drEngineName = "DREngine";
+
+	@Deprecated
 	private boolean drawOverride = false;
+
+	private Double maxDraw = 1.0;
+
+	public String getDrEngineName() {
+		return drEngineName;
+	}
+
+	public void setDrEngineName(String drEngineName) {
+		this.drEngineName = drEngineName;
+	}
 
 	@Override
 	public String getSettingUID() {
@@ -38,9 +51,11 @@ public class DRBatterySettings extends DatumDataSourceSupport implements Setting
 		results.add(new BasicTextFieldSettingSpecifier("poweredDevices.propertyFilters['UID']", "Main"));
 		results.add(new BasicTextFieldSettingSpecifier("poweredDevices.propertyFilters['groupUID']", ""));
 		results.add(new BasicTextFieldSettingSpecifier("batteryMaxCharge", defaults.maxCharge.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("batteryMaxDraw", defaults.maxDraw.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCharge", defaults.charge.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCost", defaults.cost.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCycles", defaults.cycles.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("drEngineName", defaults.drEngineName));
 		return results;
 	}
 
@@ -63,6 +78,17 @@ public class DRBatterySettings extends DatumDataSourceSupport implements Setting
 		return charge;
 	}
 
+	public Double getMaxDraw() {
+		return maxDraw;
+	}
+
+	public void setMaxDraw(Double maxDraw) {
+		this.maxDraw = maxDraw;
+		if (mockbattery.readDraw() > maxDraw) {
+			mockbattery.setDraw(maxDraw);
+		}
+	}
+
 	public void setBatteryCharge(Double charge) {
 		if (charge != null) {
 			mockbattery.setCharge(charge);
@@ -77,37 +103,41 @@ public class DRBatterySettings extends DatumDataSourceSupport implements Setting
 		return this.charge;
 	}
 
+	@Deprecated
 	public void setPoweredDevices(OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> powerDatums) {
 		this.poweredDevices = powerDatums;
 
 	}
 
+	@Deprecated
 	public OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> getPoweredDevices() {
 		return poweredDevices;
 	}
 
-	public Integer getCost() {
+	public Integer getBatteryCost() {
 		return cost;
 	}
 
-	public void setCost(Integer cost) {
+	public void setBatteryCost(Integer cost) {
 		this.cost = cost;
 	}
 
-	public Integer getCycles() {
+	public Integer getBatteryCycles() {
 		return cycles;
 	}
 
-	public void setCycles(Integer cycles) {
+	public void setBatteryCycles(Integer cycles) {
 		this.cycles = cycles;
 	}
 
 	// These methods are called from DRBattery to set state of DR events
 
+	@Deprecated
 	protected boolean isDrawOverride() {
 		return drawOverride;
 	}
 
+	@Deprecated
 	protected void setDrawOverride(boolean drawOverride) {
 		this.drawOverride = drawOverride;
 	}

@@ -1,8 +1,8 @@
 package net.solarnetwork.node.demandresponse.battery;
 
-import net.solarnetwork.node.reactor.FeedbackInstructionHandler;
+import net.solarnetwork.node.Identifiable;
 
-public interface DRDevice extends FeedbackInstructionHandler {
+public interface DRDevice extends Identifiable {
 
 	/**
 	 * Examples a battery has a limit to the number of times it can charge and
@@ -25,7 +25,7 @@ public interface DRDevice extends FeedbackInstructionHandler {
 	public Integer getMinPower();
 
 	// set to true if the device can only run at max or min and not between
-	public Boolean isToggleDevice();
+	// public List<DRCapabilites> ss();
 
 	// returns the current comsumption of device
 	public Integer getWatts();
