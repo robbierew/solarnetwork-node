@@ -59,6 +59,7 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// One device too expensive to run and has to be turned off
 	public void drdeviceReduceResponse() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(100000);
@@ -79,6 +80,7 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// we are under budget increase demand
 	public void drdeviceGainResponce() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(0);// device is free to use if you pay for its
@@ -101,6 +103,7 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// we are under budget slightly, increase a small amount of demand
 	public void drdevicePartialGainResponce() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(1);
@@ -122,6 +125,7 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// slightly over budget decrease demand a little bit
 	public void drdevicePartialDropResponse() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(1);
@@ -142,6 +146,8 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// we are over budget and can decrease demand but will be still over budget
+	// (nothing can be done to go in budget)
 	public void dropButStillOverTarget() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(2);
@@ -163,6 +169,9 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// (note it is expected behavior from my implementation to reduce demand of
+	// the most expensive devices first) We are over budget but can be solved by
+	// reducing demand of one device.
 	public void twoDRDevicesApplyOneReduce() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(2);
@@ -189,6 +198,9 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// (note it is expected behavior from my implementation to reduce demand of
+	// the most expensive devices first) In this test both devices need to
+	// reduce demand to stop being over budget.
 	public void twoDRDevicesApplyTwoReduce() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(2);
@@ -216,6 +228,9 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// (note it is expected behavior of my implementation to increase demand of
+	// the cheapest device first) We are under budget but can only increase
+	// demand to one device.
 	public void twoDRDevicesApplyOneIncrease() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(2);
@@ -242,6 +257,8 @@ public class DRUnitTests {
 	}
 
 	@Test
+	// (note it is expected behavior of my implementation to increase demand of
+	// the cheapest device first) increase demand of two devices.
 	public void twoDRDevicesApplyTwoIncrease() {
 		DRDeviceMock device = new DRDeviceMock();
 		device.setEnergyCost(2);
