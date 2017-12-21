@@ -205,6 +205,7 @@ public class DRAnouncer {
 					Double energyIncrease = increaseAmount / (d.getEnergyCost() + settings.getEnergyCost());
 					energyIncrease += d.getWatts();
 					Double appliedenergyIncrease = Math.min(energyIncrease, d.getMaxPower());
+					Double energydelta = appliedenergyIncrease - d.getWatts();
 
 					System.out.println("about to increase");
 					InstructionHandler handler = instructionMap.get(d);
@@ -216,7 +217,7 @@ public class DRAnouncer {
 						break;
 					} else {
 						// update the cost for the next devices to calcuate with
-						totalCost += appliedenergyIncrease * (d.getEnergyCost() + settings.getEnergyCost());
+						totalCost += energydelta * (d.getEnergyCost() + settings.getEnergyCost());
 					}
 
 				}
