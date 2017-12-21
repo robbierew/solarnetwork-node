@@ -240,4 +240,30 @@ public class DRUnitTests {
 		assertEquals((Object) 1, device.getWatts()); // (1*3 = 3)
 		assertEquals((Object) 8, device2.getWatts());// (8*2 = 16) total 19
 	}
+
+	@Test
+	public void twoDRDevicesApplyTwoIncrease() {
+		DRDeviceMock device = new DRDeviceMock();
+		device.setEnergyCost(2);
+		device.setWatts(1);
+		device.setDREngineName("DREngine");
+
+		DRDeviceMock device2 = new DRDeviceMock();
+		device2.setEnergyCost(1);
+		device2.setWatts(1);
+		device2.setDREngineName("DREngine");
+
+		Collection<FeedbackInstructionHandler> handlers = new ArrayList<FeedbackInstructionHandler>();
+		handlers.add(device);
+		handlers.add(device2);
+
+		settings.setEnergyCost(1);
+		settings.setDrtargetCost(48);
+
+		dra.setFeedbackInstructionHandlers(handlers);
+
+		dra.drupdate();
+		assertEquals((Object) 9, device.getWatts()); // (9*3 = 27)
+		assertEquals((Object) 10, device2.getWatts());// (10*2 = 20) total 47
+	}
 }
