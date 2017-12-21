@@ -50,7 +50,7 @@ public class DRAnouncerSettings extends DatumDataSourceSupport implements Settin
 	public void setPoweredDevices(OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> powerDatums) {
 		this.poweredDevices = powerDatums;
 		if (linkedInstance != null) {
-			linkedInstance.drupdate();
+			// linkedInstance.drupdate();
 		}
 
 	}
@@ -66,7 +66,7 @@ public class DRAnouncerSettings extends DatumDataSourceSupport implements Settin
 	public void setEnergyCost(Integer energyCost) {
 		this.energyCost = energyCost;
 		if (linkedInstance != null) {
-			linkedInstance.drupdate();
+			// linkedInstance.drupdate();
 		}
 
 	}
@@ -78,7 +78,7 @@ public class DRAnouncerSettings extends DatumDataSourceSupport implements Settin
 	public void setDrtargetCost(Integer drtargetCost) {
 		this.drtargetCost = drtargetCost;
 		if (linkedInstance != null) {
-			linkedInstance.drupdate();
+			// linkedInstance.drupdate();
 		}
 
 	}
