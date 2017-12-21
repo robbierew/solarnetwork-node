@@ -36,25 +36,7 @@ public class DRAnouncer {
 
 	// TODO give this method a massive refactoring
 	protected void drupdate() {
-		Integer sum = 0;
-		// Iterable<DatumDataSource<? extends EnergyDatum>> datumIterable =
-		// settings.getPoweredDevices().services();
-		//
-		// for (DatumDataSource<? extends EnergyDatum> d : datumIterable) {
-		//
-		// EnergyDatum datum = d.readCurrentDatum();
-		//
-		// // not all readings have a datum or a wattage reading which is why
-		// // one must check for nulls
-		// if (datum != null) {
-		// Integer reading = datum.getWatts();
-		// if (reading != null) {
-		// sum += reading;
-		// }
-		// }
-		// }
 
-		// Integer currentCost = sum * settings.getEnergyCost();
 		System.out.println("There are " + feedbackInstructionHandlers.size() + "fbih");
 		List<DRDevice> drdevices = new ArrayList<DRDevice>();
 		Map<DRDevice, FeedbackInstructionHandler> instructionMap = new HashMap<DRDevice, FeedbackInstructionHandler>();
@@ -183,14 +165,23 @@ public class DRAnouncer {
 					// if we are here we need to reduce
 					Double reduceAmount = totalCost - settings.getDrtargetCost();
 					Double energyReduction = reduceAmount / (d.getEnergyCost() + settings.getEnergyCost());
-					energyReduction = (d.getWatts() - energyReduction > d.getMinPower()) ? energyReduction
+					Double appliedenergyReduction = (d.getWatts() - energyReduction > d.getMinPower()) ? energyReduction
 							: d.getWatts() - d.getMinPower();
 
-					System.out.println("reduceAmount" + energyReduction);
+					System.out.println("reduceAmount" + appliedenergyReduction);
 
 					InstructionHandler handler = instructionMap.get(d);
 
-					sendShedInstruction(handler, energyReduction);
+					sendShedInstruction(handler, appliedenergyReduction);
+
+					// we were able to increase to match demand no need for more
+					// devices to have DR
+					if (energyReduction.equals(appliedenergyReduction)) {
+						break;
+					} else {
+						// update the cost for the next devices to calcuate with
+						totalCost -= appliedenergyReduction * (d.getEnergyCost() + settings.getEnergyCost());
+					}
 
 				}
 			}
@@ -212,32 +203,26 @@ public class DRAnouncer {
 					// if we are here it is okay to increase usage
 					Double increaseAmount = settings.getDrtargetCost() - totalCost;
 					Double energyIncrease = increaseAmount / (d.getEnergyCost() + settings.getEnergyCost());
-					energyIncrease = Math.min(energyIncrease + d.getWatts(), d.getMaxPower()); // (d.getWatts()+energyIncrease
-																								// <
-																								// d.getMaxPower())
-																								// ?
-																								// energyIncrease
+					energyIncrease += d.getWatts();
+					Double appliedenergyIncrease = Math.min(energyIncrease, d.getMaxPower());
+
 					System.out.println("about to increase");
 					InstructionHandler handler = instructionMap.get(d);
-					setWattageInstruction(handler, energyIncrease);
+					setWattageInstruction(handler, appliedenergyIncrease);
+
+					// we were able to increase to match demand no need for more
+					// devices to have DR
+					if (energyIncrease.equals(appliedenergyIncrease)) {
+						break;
+					} else {
+						// update the cost for the next devices to calcuate with
+						totalCost += appliedenergyIncrease * (d.getEnergyCost() + settings.getEnergyCost());
+					}
 
 				}
 
 			}
 		}
-
-		// for now lets just see if this works
-		// settings.getEnergyCost() < sum
-		// if (true) {
-		// for (InstructionHandler handler : drdevices) {
-		// BasicInstruction instr = new
-		// BasicInstruction(InstructionHandler.TOPIC_SHED_LOAD, new Date(),
-		// Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID,
-		// null);
-		// instr.addParameter(settings.getUID(), "10.0");
-		// handler.processInstruction(instr);
-		// }
-		// }
 
 	}
 
@@ -253,93 +238,6 @@ public class DRAnouncer {
 				Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
 		instr.addParameter(settings.getUID(), shedamount.toString());
 		handler.processInstruction(instr);
-	}
-
-	// TODO give this method a massive refactoring
-	@Deprecated
-	protected void drupdateOld() {
-		Integer sum = 0;
-		// Iterable<DatumDataSource<? extends EnergyDatum>> datumIterable =
-		// settings.getPoweredDevices().services();
-		//
-		// for (DatumDataSource<? extends EnergyDatum> d : datumIterable) {
-		//
-		// EnergyDatum datum = d.readCurrentDatum();
-		//
-		// // not all readings have a datum or a wattage reading which is why
-		// // one must check for nulls
-		// if (datum != null) {
-		// Integer reading = datum.getWatts();
-		// if (reading != null) {
-		// sum += reading;
-		// }
-		// }
-		// }
-
-		// Integer currentCost = sum * settings.getEnergyCost();
-		System.out.println("There are " + feedbackInstructionHandlers.size() + "fbih");
-		List<InstructionHandler> drdevices = new ArrayList<InstructionHandler>();
-		for (FeedbackInstructionHandler handler : feedbackInstructionHandlers) {
-
-			if (handler.handlesTopic("getDRDeviceInstance")) {
-				BasicInstruction instr = new BasicInstruction("getDRDeviceInstance", new Date(),
-						Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
-				instr.addParameter(settings.getUID(), "");
-				System.out.println("before cast");
-				DRDevice instance;
-
-				Object test = handler.processInstructionWithFeedback(instr).getResultParameters();
-				if (test != null) {
-					test = handler.processInstructionWithFeedback(instr).getResultParameters().get("instance");
-				}
-
-				if (test instanceof DRDevice) {
-					System.out.println("got instance");
-					if (test instanceof DRChargeableDevice) {
-						System.out.println("is also chargealbe");
-					}
-					instance = (DRDevice) test;
-
-				} else if (test != null) {
-					System.out.println(test.getClass().toString());
-				}
-				System.out.println("asked for instance");
-				if (/** instance != null **/
-				true) {
-
-					instr = new BasicInstruction(InstructionHandler.TOPIC_SHED_LOAD, new Date(),
-							Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
-					instr.addParameter(settings.getUID(), (new Double(10.0 * Math.random())).toString());
-					handler.processInstruction(instr);
-				}
-			}
-			System.out.println("My first debug print statment");
-			drdevices.add(handler);
-
-		}
-		// for now lets just see if this works
-		// settings.getEnergyCost() < sum
-		// if (true) {
-		// for (InstructionHandler handler : drdevices) {
-		// BasicInstruction instr = new
-		// BasicInstruction(InstructionHandler.TOPIC_SHED_LOAD, new Date(),
-		// Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID,
-		// null);
-		// instr.addParameter(settings.getUID(), "10.0");
-		// handler.processInstruction(instr);
-		// }
-		// }
-
-	}
-
-	@Deprecated
-	public void setInstructionHandlers(Collection<InstructionHandler> instructionHandlers) {
-		this.instructionHandlers = instructionHandlers;
-	}
-
-	@Deprecated
-	public Collection<InstructionHandler> getInstructionHandlers() {
-		return instructionHandlers;
 	}
 
 	public Collection<FeedbackInstructionHandler> getFeedbackInstructionHandlers() {

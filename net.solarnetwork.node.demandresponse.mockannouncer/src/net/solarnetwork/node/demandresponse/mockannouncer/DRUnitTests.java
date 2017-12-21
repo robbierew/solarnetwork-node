@@ -120,4 +120,124 @@ public class DRUnitTests {
 		assertEquals((Object) 4, device.getWatts());
 
 	}
+
+	@Test
+	public void drdevicePartialDropResponse() {
+		DRDeviceMock device = new DRDeviceMock();
+		device.setEnergyCost(1);
+		device.setWatts(8);
+		device.setDREngineName("DREngine");
+
+		Collection<FeedbackInstructionHandler> handlers = new ArrayList<FeedbackInstructionHandler>();
+		handlers.add(device);
+
+		settings.setEnergyCost(1);
+		settings.setDrtargetCost(8);
+
+		dra.setFeedbackInstructionHandlers(handlers);
+
+		dra.drupdate();
+
+		assertEquals((Object) 4, device.getWatts());
+	}
+
+	@Test
+	public void dropButStillOverTarget() {
+		DRDeviceMock device = new DRDeviceMock();
+		device.setEnergyCost(2);
+		device.setWatts(10);
+		device.setDREngineName("DREngine");
+		device.setMinPower(5);
+
+		Collection<FeedbackInstructionHandler> handlers = new ArrayList<FeedbackInstructionHandler>();
+		handlers.add(device);
+
+		settings.setEnergyCost(1);
+		settings.setDrtargetCost(8);
+
+		dra.setFeedbackInstructionHandlers(handlers);
+
+		dra.drupdate();
+
+		assertEquals((Object) 5, device.getWatts());
+	}
+
+	@Test
+	public void twoDRDevicesApplyOneReduce() {
+		DRDeviceMock device = new DRDeviceMock();
+		device.setEnergyCost(2);
+		device.setWatts(10);
+		device.setDREngineName("DREngine");
+
+		DRDeviceMock device2 = new DRDeviceMock();
+		device2.setEnergyCost(1);
+		device2.setWatts(10);
+		device2.setDREngineName("DREngine");
+
+		Collection<FeedbackInstructionHandler> handlers = new ArrayList<FeedbackInstructionHandler>();
+		handlers.add(device);
+		handlers.add(device2);
+
+		settings.setEnergyCost(1);
+		settings.setDrtargetCost(20);
+
+		dra.setFeedbackInstructionHandlers(handlers);
+
+		dra.drupdate();
+		assertEquals((Object) 0, device.getWatts());
+		assertEquals((Object) 10, device2.getWatts());
+	}
+
+	@Test
+	public void twoDRDevicesApplyTwoReduce() {
+		DRDeviceMock device = new DRDeviceMock();
+		device.setEnergyCost(2);
+		device.setWatts(10);
+		device.setDREngineName("DREngine");
+		device.setMinPower(8);
+
+		DRDeviceMock device2 = new DRDeviceMock();
+		device2.setEnergyCost(1);
+		device2.setWatts(10);
+		device2.setDREngineName("DREngine");
+
+		Collection<FeedbackInstructionHandler> handlers = new ArrayList<FeedbackInstructionHandler>();
+		handlers.add(device);
+		handlers.add(device2);
+
+		settings.setEnergyCost(1);
+		settings.setDrtargetCost(40);
+
+		dra.setFeedbackInstructionHandlers(handlers);
+
+		dra.drupdate();
+		assertEquals((Object) 8, device.getWatts()); // (8*3 = 24)
+		assertEquals((Object) 8, device2.getWatts());// (8*2 = 16) total 40
+	}
+
+	@Test
+	public void twoDRDevicesApplyOneIncrease() {
+		DRDeviceMock device = new DRDeviceMock();
+		device.setEnergyCost(2);
+		device.setWatts(1);
+		device.setDREngineName("DREngine");
+
+		DRDeviceMock device2 = new DRDeviceMock();
+		device2.setEnergyCost(1);
+		device2.setWatts(1);
+		device2.setDREngineName("DREngine");
+
+		Collection<FeedbackInstructionHandler> handlers = new ArrayList<FeedbackInstructionHandler>();
+		handlers.add(device);
+		handlers.add(device2);
+
+		settings.setEnergyCost(1);
+		settings.setDrtargetCost(19);
+
+		dra.setFeedbackInstructionHandlers(handlers);
+
+		dra.drupdate();
+		assertEquals((Object) 1, device.getWatts()); // (1*3 = 3)
+		assertEquals((Object) 8, device2.getWatts());// (8*2 = 16) total 19
+	}
 }
