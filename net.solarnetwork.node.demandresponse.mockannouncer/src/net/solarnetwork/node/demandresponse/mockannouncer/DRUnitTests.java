@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import net.solarnetwork.node.demandresponse.battery.DRBattery;
@@ -29,7 +28,6 @@ public class DRUnitTests {
 	}
 
 	@Test
-	@Ignore
 	// we can afford to charge a battery charge it
 	public void testBatteryChargeTest() {
 		DRBattery drb = new DRBattery();
@@ -41,7 +39,7 @@ public class DRUnitTests {
 		batterySettings.setBatteryCharge(0.0);
 		batterySettings.setBatteryCost(1);
 		batterySettings.setDrEngineName("DREngine");
-		batterySettings.setBatteryCycles(100);
+		batterySettings.setBatteryCycles(1000);
 
 		settings.setEnergyCost(1);
 		settings.setDrtargetCost(100);
@@ -52,9 +50,9 @@ public class DRUnitTests {
 		dra.setFeedbackInstructionHandlers(handlers);
 
 		dra.drupdate();
-
+		System.out.println("testing" + drb.getEnergyCost());
 		assertFalse(drb.isDischarging());
-		assertEquals((Object) battery.readDraw(), batterySettings.getMaxDraw());
+		assertEquals(drb.getMaxPower(), drb.getWatts());
 
 	}
 

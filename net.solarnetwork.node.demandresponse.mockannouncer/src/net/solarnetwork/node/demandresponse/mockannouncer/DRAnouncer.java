@@ -169,13 +169,19 @@ public class DRAnouncer {
 		// cost and battery costs
 		Integer gridEnergy = energyConsumption - energyProduction;
 		Double newPrice = settings.getEnergyCost() * (double) gridEnergy / energyConsumption;
+
+		// TODO check if there is an more nicer way to do this
+		// when energyConusmption is 0
+		if (newPrice.isNaN()) {
+			newPrice = 1.0;
+		}
+
 		for (DRDevice d : drdevices) {
 
 			// again another reason for a mapping
 			if (d instanceof DRChargeableDevice) {
 				DRChargeableDevice dc = (DRChargeableDevice) d;
 				if (dc.isDischarging()) {
-
 					// TODO somehow update this price when battery changes
 					newPrice += d.getEnergyCost() * d.getWatts() / energyConsumption;
 				}
@@ -303,18 +309,26 @@ public class DRAnouncer {
 
 							// TODO somehow decide whether to turn off battery,
 							// charge battery or discharge more
+						} else if (dr.getCharge() == 0) {
+
 						}
 					}
 
 					// if we are here it is okay to increase usage
 					Double increaseAmount = settings.getDrtargetCost() - totalCost;
+
+					System.out.println("increaseAmount " + increaseAmount);
+
 					Double energyIncrease = increaseAmount / (d.getEnergyCost() + settings.getEnergyCost());
 					energyIncrease += d.getWatts();
+
+					System.out.println("energy Increase " + energyIncrease);
+
 					Double appliedenergyIncrease = Math.min(energyIncrease, d.getMaxPower());
 					Double energydelta = appliedenergyIncrease - d.getWatts();
 
 					// TODO remove print statement
-					System.out.println("about to increase");
+					System.out.println("about to increase " + appliedenergyIncrease);
 					InstructionHandler handler = instructionMap.get(d);
 					setWattageInstruction(handler, appliedenergyIncrease);
 
@@ -340,6 +354,7 @@ public class DRAnouncer {
 		BasicInstruction instr = new BasicInstruction(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER, new Date(),
 				Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
 		instr.addParameter("watts", energyLevel.toString());
+		instr.addParameter("discharge", "false");
 		handler.processInstruction(instr);
 	}
 

@@ -75,7 +75,7 @@ public class DRBatterySettings extends DatumDataSourceSupport implements Setting
 	}
 
 	public Double getBatteryMaxCharge() {
-		return charge;
+		return maxCharge;
 	}
 
 	public Double getMaxDraw() {

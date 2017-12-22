@@ -53,6 +53,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 	@Override
 	public InstructionStatus processInstructionWithFeedback(Instruction instruction) {
 		InstructionState state;
+		MockBattery battery = settings.getMockBattery();
 		if (instruction.getTopic().equals("getDRDeviceInstance")) {
 			// for now lets just get this working
 			state = InstructionState.Completed;
@@ -70,7 +71,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 			if (param != null) {
 				try {
 					double value = Double.parseDouble(param);
-					MockBattery battery = settings.getMockBattery();
+
 					double draw = battery.readDraw() - value;
 					if (true) {
 						// TODO ensure maxdraw is met
@@ -90,10 +91,44 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 			state = InstructionState.Declined;
 		}
 
-		if (state == InstructionState.Declined) {
-			MockBattery battery = settings.getMockBattery();
-			battery.setCharge(4);
+		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
+			String param = instruction.getParameterValue("watts");
+			String param2 = instruction.getParameterValue("discharge");
+			if (param != null && param2 != null) {
+				try {
+					System.out.println("value is " + param);
+					double value = Double.parseDouble(param);
+					boolean discharge = Boolean.parseBoolean(param2);
+					if (value < 0) {
+						battery.setDraw(0.0);
+					} else if (value > settings.getMaxDraw()) {
+						if (discharge) {
+							battery.setDraw(settings.getMaxDraw());
+						} else {
+							battery.setDraw(-settings.getMaxDraw());
+						}
+
+					} else {
+						if (discharge) {
+							battery.setDraw(value);
+						} else {
+							battery.setDraw(-value);
+						}
+
+					}
+					state = InstructionState.Completed;
+				} catch (NumberFormatException e) {
+					state = InstructionState.Declined;
+				}
+
+			} else {
+				state = InstructionState.Declined;
+			}
 		}
+
+		// if (state == InstructionState.Declined) {
+		// battery.setCharge(4);
+		// }
 
 		InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date());
 
@@ -124,12 +159,8 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 	@Override
 	public Integer getEnergyCost() {
 		// TODO Auto-generated method stub
-		try {
-			return (int) (settings.getBatteryCost()
-					/ (settings.getBatteryCycles() * settings.getBatteryMaxCharge() * 2));
-		} catch (RuntimeException e) {
-			return null;
-		}
+		return (int) (settings.getBatteryCost().doubleValue()
+				/ (settings.getBatteryCycles().doubleValue() * settings.getBatteryMaxCharge() * 2.0));
 
 	}
 
@@ -148,7 +179,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 	@Override
 	public Integer getWatts() {
 		// TODO Auto-generated method stub
-		return (int) settings.getMockBattery().readDraw();
+		return (int) Math.abs(settings.getMockBattery().readDraw());
 	}
 
 	@Override
@@ -175,7 +206,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 
 	@Override
 	public Boolean isDischarging() {
-		return settings.getMockBattery().readDraw() < 0;
+		return settings.getMockBattery().readDraw() > 0;
 	}
 
 }
