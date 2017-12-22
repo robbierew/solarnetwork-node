@@ -281,4 +281,40 @@ public class DRUnitTests {
 		assertEquals((Object) 9, device.getWatts()); // (9*3 = 27)
 		assertEquals((Object) 10, device2.getWatts());// (10*2 = 20) total 47
 	}
+
+	@Test
+	// Energy is too expensive but battery cheap use it instead
+	public void powerDeviceByBattery() {
+		DRBattery drb = new DRBattery();
+		DRBatterySettings batterySettings = new DRBatterySettings();
+		MockBattery battery = new MockBattery();
+		batterySettings.setMockBattery(battery);
+		drb.setDRBatterySettings(batterySettings);
+
+		batterySettings.setBatteryCharge(10.0);
+		batterySettings.setBatteryCost(1);
+		batterySettings.setDrEngineName("DREngine");
+		batterySettings.setBatteryCycles(1000);
+
+		DRDeviceMock device = new DRDeviceMock();
+		device.setEnergyCost(1);
+		device.setWatts(10);
+		device.setDREngineName("DREngine");
+		device.setMinPower(8);
+
+		Collection<FeedbackInstructionHandler> handlers = new ArrayList<FeedbackInstructionHandler>();
+		handlers.add(device);
+		handlers.add(drb);
+
+		settings.setEnergyCost(10);
+		settings.setDrtargetCost(10);
+
+		dra.setFeedbackInstructionHandlers(handlers);
+
+		dra.drupdate();
+
+		assertEquals((Object) 8, device.getWatts());
+		assertEquals((Object) 8, drb.getWatts());
+
+	}
 }

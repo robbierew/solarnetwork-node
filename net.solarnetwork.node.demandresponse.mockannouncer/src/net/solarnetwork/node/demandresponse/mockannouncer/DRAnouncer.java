@@ -233,6 +233,9 @@ public class DRAnouncer {
 		// TODO remove debug statement
 		System.out.println("debug" + totalCost + " " + settings.getDrtargetCost());
 
+		// TODO refactor this so much
+		Boolean shouldDischarge = null;
+
 		// if this is true we need to reduce demand to get costs down
 		if (totalCost > settings.getDrtargetCost()) {
 			System.out.println("decrease section");
@@ -248,13 +251,24 @@ public class DRAnouncer {
 					// check if we are discharging battery
 					if (d instanceof DRChargeableDevice) {
 						DRChargeableDevice dr = (DRChargeableDevice) d;
-						if (dr.isDischarging()) {
 
-							// reducing the battery would cause more energy from
-							// the grid
-							// if grid energy costs more keep the battery going
-							if (settings.getEnergyCost() > d.getEnergyCost()) {
+						if (settings.getEnergyCost() > dr.getEnergyCost()) {
+							if (dr.isDischarging()) {
+
+								// reducing the battery would cause more energy
+								// from
+								// the grid
+								// if grid energy costs more keep the battery
+								// going
+
 								continue;
+
+							} else {
+								if (dr.getCharge() > 0) {
+									// Problem im having here is that the code
+									// below is for shreding
+									// but I need to increase just for discharge
+								}
 							}
 						}
 
@@ -309,8 +323,8 @@ public class DRAnouncer {
 
 							// TODO somehow decide whether to turn off battery,
 							// charge battery or discharge more
-						} else if (dr.getCharge() == 0) {
-
+						} else {
+							shouldDischarge = false;
 						}
 					}
 
@@ -330,7 +344,7 @@ public class DRAnouncer {
 					// TODO remove print statement
 					System.out.println("about to increase " + appliedenergyIncrease);
 					InstructionHandler handler = instructionMap.get(d);
-					setWattageInstruction(handler, appliedenergyIncrease);
+					setWattageInstruction(handler, appliedenergyIncrease, shouldDischarge);
 
 					// we were able to increase to match demand no need for more
 					// devices to have DR
@@ -350,11 +364,15 @@ public class DRAnouncer {
 
 	// Instruction to set the wattage parameter on the device it uses the
 	// TOPIC_SET_CONTROL_PARAMETER insrtuction
-	private void setWattageInstruction(InstructionHandler handler, Double energyLevel) {
+	private void setWattageInstruction(InstructionHandler handler, Double energyLevel, Boolean shouldDischarge) {
 		BasicInstruction instr = new BasicInstruction(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER, new Date(),
 				Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
 		instr.addParameter("watts", energyLevel.toString());
-		instr.addParameter("discharge", "false");
+
+		if (shouldDischarge != null) {
+			instr.addParameter("discharge", shouldDischarge.toString());
+		}
+
 		handler.processInstruction(instr);
 	}
 
