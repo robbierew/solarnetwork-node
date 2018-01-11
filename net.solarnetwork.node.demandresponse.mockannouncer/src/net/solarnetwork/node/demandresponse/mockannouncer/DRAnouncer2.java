@@ -47,7 +47,7 @@ import net.solarnetwork.util.OptionalServiceCollection;
  * @author robert
  *
  */
-public class DRAnouncer {
+public class DRAnouncer2 {
 	private DRAnouncerSettings settings;
 	private OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> poweredDevices;
 	private Collection<FeedbackInstructionHandler> feedbackInstructionHandlers;
@@ -65,7 +65,10 @@ public class DRAnouncer {
 		// I don't like this coupling factor this somehow
 		// potentaly look into getting drupdate called from a cron expression
 		// rather than when a setting changes
-		settings.setLinkedInstance(this);
+		
+		
+		//COMMENTED HERE TO HIDE ERROR WHEN REFACTORING
+		//settings.setLinkedInstance(this);
 	}
 
 	// TODO give this method a massive refactoring
@@ -73,14 +76,14 @@ public class DRAnouncer {
 
 		// TODO remove
 		System.out.println("There are " + feedbackInstructionHandlers.size() + "fbih");
-		List<FeedbackInstructionHandler> drdevices = new ArrayList<FeedbackInstructionHandler>();
+		List<DRDevice> drdevices = new ArrayList<DRDevice>();
 
 		// I think it would be better if we asked for a map of parameters
 		// so this map can be replaced by something like
 		// Map<FeedbackInstructionHandler,Map<String,String>>
 		// the reason the mapping should be in String String is because perhapes
 		// in the future it could be JSON
-		Map<FeedbackInstructionHandler, Map<String,?>> instructionMap = new HashMap<FeedbackInstructionHandler, Map<String,?>>();
+		Map<DRDevice, FeedbackInstructionHandler> instructionMap = new HashMap<DRDevice, FeedbackInstructionHandler>();
 
 		for (FeedbackInstructionHandler handler : feedbackInstructionHandlers) {
 
@@ -97,34 +100,33 @@ public class DRAnouncer {
 				// TODO remove
 				System.out.println("before cast");
 
-				
+				DRDevice instance;
 
 				// It is not currently standard for classes to respond with
 				// entire objects
 				// another reason why a mapping would be better
-				Map<String,?> test = handler.processInstructionWithFeedback(instr).getResultParameters();
+				Object test = handler.processInstructionWithFeedback(instr).getResultParameters();
 				if (test != null) {
-					test = handler.processInstructionWithFeedback(instr).getResultParameters();
-					if ("true".equals(test.get("drcapable"))) {
-						System.out.println("got instance");
-						// another reason for a mapping is it gets rid of the
-						// subtypes of the DRDevice interface
-						if ("true".equals(test.get("chargeable"))) {
-							System.out.println("is also chargealbe");
-						}
-
-						
-						drdevices.add(handler);
-						instructionMap.put(handler, test);
-
-						// TODO remove debug statement
-					} else if (test != null) {
-						System.out.println(test.getClass().toString());
-					}
-					System.out.println("asked for instance");
+					test = handler.processInstructionWithFeedback(instr).getResultParameters().get("instance");
 				}
 
-				
+				if (test instanceof DRDevice) {
+					System.out.println("got instance");
+					// another reason for a mapping is it gets rid of the
+					// subtypes of the DRDevice interface
+					if (test instanceof DRChargeableDevice) {
+						System.out.println("is also chargealbe");
+					}
+
+					instance = (DRDevice) test;
+					drdevices.add(instance);
+					instructionMap.put(instance, handler);
+
+					// TODO remove debug statement
+				} else if (test != null) {
+					System.out.println(test.getClass().toString());
+				}
+				System.out.println("asked for instance");
 			}
 			System.out.println("My first debug print statment");
 			// drdevices.add(handler);
@@ -144,28 +146,18 @@ public class DRAnouncer {
 
 		// energyProduction is energy used when discharging
 		Integer energyProduction = 0;
-		for (FeedbackInstructionHandler d : drdevices) {
-			Map<String,?> params = instructionMap.get(d);
+		for (DRDevice d : drdevices) {
+
 			// again a mapping would be so much better for this
-			
-			String wattString = (String) params.get("watts");
-			Integer wattValue = 0;
-			if (wattString != null) {
-				try {
-					wattValue = Integer.parseInt(wattString);
-				}catch (NumberFormatException e){
-					//WattValue is 0 
-				}
-			}
-			if ("true".equals(params.get("chargeable"))) {
-				
-				if ("true".equals(params.get("isDischarging"))) {
-					energyProduction += wattValue;
+			if (d instanceof DRChargeableDevice) {
+				DRChargeableDevice dc = (DRChargeableDevice) d;
+				if (dc.isDischarging()) {
+					energyProduction += dc.getWatts();
 				} else {
-					energyConsumption += wattValue;
+					energyConsumption += dc.getWatts();
 				}
 			} else {
-				energyConsumption += wattValue;
+				energyConsumption += d.getWatts();
 			}
 		}
 
@@ -187,29 +179,14 @@ public class DRAnouncer {
 			newPrice = 1.0;
 		}
 
-		for (FeedbackInstructionHandler d : drdevices) {
-			Map<String,?> params = instructionMap.get(d);
+		for (DRDevice d : drdevices) {
+
 			// again another reason for a mapping
-			if ("true".equals(params.get("chargeable"))) {
-				String wattString = (String) params.get("watts");
-				String costString = (String) params.get("energycost");
-				Integer wattValue = 0;
-				Integer costValue = 0;
-				if (wattString != null) {
-					try {
-						
-						//from looking at javadoc parseInt returns NumberFormatException for null 
-						//however parseDouble returns nullpointer exception be careful if datatype changes in future
-						
-						wattValue = Integer.parseInt(wattString);
-						costValue = Integer.parseInt(costString);
-					}catch (NumberFormatException e){
-						//WattValue is 0 
-					}
-				}
-				if ("true".equals(params.get("isDischarging"))) {
+			if (d instanceof DRChargeableDevice) {
+				DRChargeableDevice dc = (DRChargeableDevice) d;
+				if (dc.isDischarging()) {
 					// TODO somehow update this price when battery changes
-					newPrice += costValue * wattValue / energyConsumption;
+					newPrice += d.getEnergyCost() * d.getWatts() / energyConsumption;
 				}
 
 			}
@@ -223,27 +200,10 @@ public class DRAnouncer {
 		// same double and I need to be able to sort the first column
 		Object[][] costArray = new Object[drdevices.size()][2];
 		for (int i = 0; i < drdevices.size(); i++) {
-			FeedbackInstructionHandler d = drdevices.get(i);
-			Map<String,?> params = instructionMap.get(d);
-			String wattString = (String) params.get("watts");
-			String costString = (String) params.get("energycost");
-			Integer wattValue = 0;
-			Integer costValue = 0;
-			if (wattString != null && costValue != null) {
-				try {
-					
-					//from looking at javadoc parseInt returns NumberFormatException for null 
-					//however parseDouble returns nullpointer exception be careful if datatype changes in future
-					
-					wattValue = Integer.parseInt(wattString);
-					costValue = Integer.parseInt(costString);
-				}catch (NumberFormatException e){
-					//WattValue is 0 
-				}
-			}
+			DRDevice d = drdevices.get(i);
 			// TODO double check you have done your maths correctly to factor in
 			// the convention of price being in KWh but using watts
-			costArray[i][0] = (costValue + newPrice) * wattValue;
+			costArray[i][0] = (d.getEnergyCost() + newPrice) * d.getWatts();
 			costArray[i][1] = d;
 		}
 
@@ -286,53 +246,34 @@ public class DRAnouncer {
 			// going from largest cost to smallest cost (this is just a design
 			// decision I made)
 			for (int i = drdevices.size() - 1; i >= 0; i--) {
-				FeedbackInstructionHandler d = (FeedbackInstructionHandler) costArray[i][1];
-				Map<String,?> params = instructionMap.get(d);
-				String wattString = (String) params.get("watts");
-				String minString = (String) params.get("minwatts");
-				String energycostString = (String) params.get("energycost");
-				Integer wattValue = 0;
-				Integer minValue = 0;
-				Integer energyCost = 0;
-				if (wattString != null && minValue != null) {
-					try {
-						
-						//from looking at javadoc parseInt returns NumberFormatException for null 
-						//however parseDouble returns nullpointer exception be careful if datatype changes in future
-						
-						wattValue = Integer.parseInt(wattString);
-						minValue = Integer.parseInt(minString);
-						energyCost = Integer.parseInt(energycostString);
-					}catch (NumberFormatException e){
-						//WattValue is 0 
-					}
-				}
+				DRDevice d = (DRDevice) costArray[i][1];
+
 				// check if we can reduce consumption
-				if (wattValue > minValue) {
+				if (d.getWatts() > d.getMinPower()) {
 
 					// check if we are discharging battery
-					if ("true".equals(params.get("chargeable"))) {
-						
+					if (d instanceof DRChargeableDevice) {
+						DRChargeableDevice dr = (DRChargeableDevice) d;
 
-//						if (settings.getEnergyCost() > dr.getEnergyCost()) {
-//							if (dr.isDischarging()) {
-//
-//								// reducing the battery would cause more energy
-//								// from
-//								// the grid
-//								// if grid energy costs more keep the battery
-//								// going
-//
-//								continue;
-//
-//							} else {
-//								if (dr.getCharge() > 0) {
-//									// Problem im having here is that the code
-//									// below is for shreding
-//									// but I need to increase just for discharge
-//								}
-//							}
-//						}
+						if (settings.getEnergyCost() > dr.getEnergyCost()) {
+							if (dr.isDischarging()) {
+
+								// reducing the battery would cause more energy
+								// from
+								// the grid
+								// if grid energy costs more keep the battery
+								// going
+
+								continue;
+
+							} else {
+								if (dr.getCharge() > 0) {
+									// Problem im having here is that the code
+									// below is for shreding
+									// but I need to increase just for discharge
+								}
+							}
+						}
 
 						// TODO add logic here to decide to discharge
 
@@ -340,17 +281,17 @@ public class DRAnouncer {
 
 					// if we are here we need to reduce
 					Double reduceAmount = totalCost - settings.getDrtargetCost();
-					Double energyReduction = reduceAmount / (energyCost + settings.getEnergyCost());
-					Double appliedenergyReduction = (wattValue - energyReduction > minValue) ? energyReduction
-							: wattValue - minValue;
+					Double energyReduction = reduceAmount / (d.getEnergyCost() + settings.getEnergyCost());
+					Double appliedenergyReduction = (d.getWatts() - energyReduction > d.getMinPower()) ? energyReduction
+							: d.getWatts() - d.getMinPower();
 
 					System.out.println("reduceAmount" + appliedenergyReduction);
 
-					
+					InstructionHandler handler = instructionMap.get(d);
 
 					// Im annoyed by this instruction because it is only reduce
 					// and not gain
-					sendShedInstruction(d, appliedenergyReduction);
+					sendShedInstruction(handler, appliedenergyReduction);
 
 					// we were able to increase to match demand no need for more
 					// devices to have DR
@@ -362,7 +303,7 @@ public class DRAnouncer {
 						// still effective
 						// One idea is to have a method to recalcuate the entire
 						// cost all over again
-						totalCost -= appliedenergyReduction * (energyCost + settings.getEnergyCost());
+						totalCost -= appliedenergyReduction * (d.getEnergyCost() + settings.getEnergyCost());
 					}
 
 				}
@@ -376,31 +317,12 @@ public class DRAnouncer {
 			// this time we start with the cheapest devices (my reasoning is
 			// that these devices most likely have room to power on more)
 			for (int i = 0; i < drdevices.size(); i++) {
-				FeedbackInstructionHandler d = (FeedbackInstructionHandler) costArray[i][1];
-				Map<String,?> params = instructionMap.get(d);
-				String wattString = (String) params.get("watts");
-				String maxString = (String) params.get("maxwatts");
-				String energycostString = (String) params.get("energycost");
-				Integer wattValue = 0;
-				Integer maxValue = 0;
-				Integer energyCost = 0;
-				if (wattString != null && maxValue != null) {
-					try {
-						
-						//from looking at javadoc parseInt returns NumberFormatException for null 
-						//however parseDouble returns nullpointer exception be careful if datatype changes in future
-						
-						wattValue = Integer.parseInt(wattString);
-						maxValue = Integer.parseInt(maxString);
-						energyCost = Integer.parseInt(energycostString);
-					}catch (NumberFormatException e){
-						//WattValue is 0 
-					}
-				}
-				if (wattValue < maxValue) {
-					if ("true".equals(params.get("chargeable"))) {
-						
-						if ("true".equals(params.get("isDischarging"))) {
+				DRDevice d = (DRDevice) costArray[i][1];
+
+				if (d.getWatts() < d.getMaxPower()) {
+					if (d instanceof DRChargeableDevice) {
+						DRChargeableDevice dr = (DRChargeableDevice) d;
+						if (dr.isDischarging()) {
 
 							// TODO somehow decide whether to turn off battery,
 							// charge battery or discharge more
@@ -414,18 +336,18 @@ public class DRAnouncer {
 
 					System.out.println("increaseAmount " + increaseAmount);
 
-					Double energyIncrease = increaseAmount / (energyCost + settings.getEnergyCost());
-					energyIncrease += wattValue;
+					Double energyIncrease = increaseAmount / (d.getEnergyCost() + settings.getEnergyCost());
+					energyIncrease += d.getWatts();
 
 					System.out.println("energy Increase " + energyIncrease);
 
-					Double appliedenergyIncrease = Math.min(energyIncrease, maxValue);
-					Double energydelta = appliedenergyIncrease - wattValue;
+					Double appliedenergyIncrease = Math.min(energyIncrease, d.getMaxPower());
+					Double energydelta = appliedenergyIncrease - d.getWatts();
 
 					// TODO remove print statement
 					System.out.println("about to increase " + appliedenergyIncrease);
-					
-					setWattageInstruction(d, appliedenergyIncrease, shouldDischarge);
+					InstructionHandler handler = instructionMap.get(d);
+					setWattageInstruction(handler, appliedenergyIncrease, shouldDischarge);
 
 					// we were able to increase to match demand no need for more
 					// devices to have DR
@@ -433,7 +355,7 @@ public class DRAnouncer {
 						break;
 					} else {
 						// update the cost for the next devices to calcuate with
-						totalCost += energydelta * (energyCost + settings.getEnergyCost());
+						totalCost += energydelta * (d.getEnergyCost() + settings.getEnergyCost());
 					}
 
 				}
