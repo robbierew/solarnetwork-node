@@ -294,7 +294,7 @@ public class DRAnouncer {
 				Integer wattValue = 0;
 				Integer minValue = 0;
 				Integer energyCost = 0;
-				if (wattString != null && minValue != null) {
+				if (wattString != null && minString != null) {
 					try {
 						
 						//from looking at javadoc parseInt returns NumberFormatException for null 
@@ -372,7 +372,7 @@ public class DRAnouncer {
 		} else if (totalCost < settings.getDrtargetCost()) {
 			// TODO remove print statement
 			System.out.println("increase section");
-
+			System.out.println("drd " + drdevices.size());
 			// this time we start with the cheapest devices (my reasoning is
 			// that these devices most likely have room to power on more)
 			for (int i = 0; i < drdevices.size(); i++) {
@@ -384,7 +384,7 @@ public class DRAnouncer {
 				Integer wattValue = 0;
 				Integer maxValue = 0;
 				Integer energyCost = 0;
-				if (wattString != null && maxValue != null) {
+				if (wattString != null && maxString != null) {
 					try {
 						
 						//from looking at javadoc parseInt returns NumberFormatException for null 

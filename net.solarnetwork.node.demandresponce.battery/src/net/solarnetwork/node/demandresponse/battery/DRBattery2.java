@@ -18,8 +18,8 @@ import net.solarnetwork.node.reactor.support.BasicInstructionStatus;
  * @author robert
  *
  */
-public class DRBattery extends SimpleManagedTriggerAndJobDetail
-		implements FeedbackInstructionHandler {
+public class DRBattery2 extends SimpleManagedTriggerAndJobDetail
+		implements DRChargeableDevice, FeedbackInstructionHandler {
 	private DRBatterySettings settings;
 	private Collection<InstructionHandler> instructionHandlers;
 
@@ -57,16 +57,9 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 		if (instruction.getTopic().equals("getDRDeviceInstance")) {
 			// for now lets just get this working
 			state = InstructionState.Completed;
-			Map<String, Object> map = new Hashtable<String, Object>();
-			map.put("drcapable", "true");
+			Map<String, Object> map = new Hashtable<String, Object>(1);
 			map.put("instance", this);
-			map.put("watts", new Double(Math.abs(settings.getMockBattery().readDraw())).toString());
-			map.put("charageable", "true");
-			map.put("isDischarging", new Boolean(settings.getMockBattery().readDraw() > 0).toString());
-			map.put("energycost", new Integer((int) (settings.getBatteryCost().doubleValue()
-				/ (settings.getBatteryCycles().doubleValue() * settings.getBatteryMaxCharge() * 2.0))).toString());
-			map.put("minwatts", "0");
-			map.put("maxwatts", settings.getMaxDraw().toString());
+
 			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);
 			return status;
 			// DEBUG TODO
@@ -163,7 +156,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 		return settings.getBatteryCost() / (settings.getBatteryCycles() * settings.getBatteryMaxCharge() * 2);
 	}
 
-	//@Override
+	@Override
 	public Integer getEnergyCost() {
 		// TODO Auto-generated method stub
 		return (int) (settings.getBatteryCost().doubleValue()
@@ -171,47 +164,47 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail
 
 	}
 
-	//@Override
+	@Override
 	public Integer getMaxPower() {
 		// TODO fix this hack
 		return (int) (double) settings.getMaxDraw();
 	}
 
-	//@Override
+	@Override
 	public Integer getMinPower() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	//@Override
+	@Override
 	public Integer getWatts() {
 		// TODO Auto-generated method stub
 		return (int) Math.abs(settings.getMockBattery().readDraw());
 	}
 
-	//@Override
+	@Override
 	public Integer getCharge() {
 		// TODO fix this hack
 		return (int) settings.getMockBattery().readCharge();
 	}
 
-	//@Override
+	@Override
 	public Integer getMaxCharge() {
 		// TODO fix this hack
 		return (int) (double) settings.getBatteryMaxCharge();
 	}
 
-	//@Override
+	@Override
 	public String getUID() {
 		return settings.getUID();
 	}
 
-	//@Override
+	@Override
 	public String getGroupUID() {
 		return settings.getGroupUID();
 	}
 
-	//@Override
+	@Override
 	public Boolean isDischarging() {
 		return settings.getMockBattery().readDraw() > 0;
 	}

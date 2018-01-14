@@ -12,7 +12,7 @@ import net.solarnetwork.node.reactor.InstructionStatus;
 import net.solarnetwork.node.reactor.InstructionStatus.InstructionState;
 import net.solarnetwork.node.reactor.support.BasicInstructionStatus;
 
-public class DRDeviceMock implements FeedbackInstructionHandler {
+public class DRDeviceMock2 implements DRDevice, FeedbackInstructionHandler {
 
 	private String uid = "mockDR";
 	private String groupuid = "";
@@ -22,7 +22,7 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 	private Integer minPower = 0;
 	private Integer watts = 0;
 
-	@Deprecated 
+	@Override
 	public String getUID() {
 		return uid;
 	}
@@ -31,7 +31,7 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.uid = uid;
 	}
 
-	@Deprecated 
+	@Override
 	public String getGroupUID() {
 		// TODO Auto-generated method stub
 		return groupuid;
@@ -68,11 +68,8 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 			// for now lets just get this working
 			state = InstructionState.Completed;
 			Map<String, Object> map = new Hashtable<String, Object>(1);
-			map.put("drcapable", "true");
-			map.put("watts", watts.toString());
-			map.put("energycost", energyCost.toString());
-				map.put("minwatts", minPower.toString());
-				map.put("maxwatts", maxPower.toString());
+			map.put("instance", this);
+
 			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);
 			return status;
 			// DEBUG TODO
@@ -124,7 +121,7 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		return status;
 	}
 
-	@Deprecated 
+	@Override
 	public Integer getEnergyCost() {
 		// TODO Auto-generated method stub
 		return energyCost;
@@ -134,7 +131,7 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.energyCost = energyCost;
 	}
 
-	@Deprecated 
+	@Override
 	public Integer getMaxPower() {
 		// TODO Auto-generated method stub
 		return maxPower;
@@ -144,7 +141,7 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.maxPower = maxPower;
 	}
 
-	@Deprecated 
+	@Override
 	public Integer getMinPower() {
 		// TODO Auto-generated method stub
 		return minPower;
@@ -154,7 +151,7 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.minPower = minPower;
 	}
 
-	@Deprecated 
+	@Override
 	public Integer getWatts() {
 		// TODO Auto-generated method stub
 		return watts;
