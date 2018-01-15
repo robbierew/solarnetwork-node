@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.solarnetwork.node.DatumDataSource;
-import net.solarnetwork.node.demandresponse.battery.DRChargeableDevice;
-import net.solarnetwork.node.demandresponse.battery.DRDevice;
 import net.solarnetwork.node.domain.EnergyDatum;
 import net.solarnetwork.node.reactor.FeedbackInstructionHandler;
 import net.solarnetwork.node.reactor.Instruction;
@@ -24,25 +22,12 @@ import net.solarnetwork.util.OptionalServiceCollection;
  * Method names and API use will probably change in refactoring into a propper
  * implementation.
  * 
- * As of now the current implementation works as follows. Get a list of
- * {@link net.solarnetwork.node.reactor.FeedbackInstructionHandler
- * FeedbackInstructionHandler} and ask which ones can give an instance of
- * DRDevice. A DRDevice has methods of useful data used to plan out a demand
- * response strategy.
- * 
- * When drupdate is called it calculates an appropiate demand response based on
- * energycost and drtargetcost
- * 
- * future plans I will probably remove the DRDevice interface and instead
- * request a map of paramaters that way it is easier for devices to send new
- * params for strategies that support it.
  * 
  * I want the strategy part to be changeable, I will look into being able to
  * select from a list of strategies and have their parameters dynamicly pop up
  * onto the settings page. I have seen something similar done with
  * demandbalancer
  * 
- * most of these comments are for myself as im going on break for a bit
  * 
  * @author robert
  *
@@ -75,12 +60,9 @@ public class DRAnouncer {
 		System.out.println("There are " + feedbackInstructionHandlers.size() + "fbih");
 		List<FeedbackInstructionHandler> drdevices = new ArrayList<FeedbackInstructionHandler>();
 
-		// I think it would be better if we asked for a map of parameters
-		// so this map can be replaced by something like
-		// Map<FeedbackInstructionHandler,Map<String,String>>
 		// the reason the mapping should be in String String is because perhapes
 		// in the future it could be JSON
-		Map<FeedbackInstructionHandler, Map<String,?>> instructionMap = new HashMap<FeedbackInstructionHandler, Map<String,?>>();
+		Map<FeedbackInstructionHandler, Map<String, ?>> instructionMap = new HashMap<FeedbackInstructionHandler, Map<String, ?>>();
 
 		for (FeedbackInstructionHandler handler : feedbackInstructionHandlers) {
 
@@ -94,26 +76,16 @@ public class DRAnouncer {
 				// verification
 				instr.addParameter(settings.getUID(), "");
 
-				// TODO remove
-				System.out.println("before cast");
-
-				
-
-				// It is not currently standard for classes to respond with
-				// entire objects
-				// another reason why a mapping would be better
-				Map<String,?> test = handler.processInstructionWithFeedback(instr).getResultParameters();
+				Map<String, ?> test = handler.processInstructionWithFeedback(instr).getResultParameters();
 				if (test != null) {
 					test = handler.processInstructionWithFeedback(instr).getResultParameters();
 					if (DRSupportTools.isDRCapable(test)) {
 						System.out.println("got instance");
-						// another reason for a mapping is it gets rid of the
-						// subtypes of the DRDevice interface
+
 						if (DRSupportTools.isChargeable(test)) {
 							System.out.println("is also chargealbe");
 						}
 
-						
 						drdevices.add(handler);
 						instructionMap.put(handler, test);
 
@@ -124,17 +96,9 @@ public class DRAnouncer {
 					System.out.println("asked for instance");
 				}
 
-				
 			}
-			System.out.println("My first debug print statment");
-			// drdevices.add(handler);
 
 		}
-
-		// calculating how much energy is from the grid and from other sources
-		// an issue with the current approch is that the methods could return
-		// different values each time theu are called which is another reason a
-		// mapping would be better
 
 		// TODO print statement
 		System.out.println("energy calc");
@@ -145,14 +109,12 @@ public class DRAnouncer {
 		// energyProduction is energy used when discharging
 		Integer energyProduction = 0;
 		for (FeedbackInstructionHandler d : drdevices) {
-			Map<String,?> params = instructionMap.get(d);
-			// again a mapping would be so much better for this
-			
-			
+			Map<String, ?> params = instructionMap.get(d);
+
 			Integer wattValue = DRSupportTools.readWatts(params);
-			
+
 			if (DRSupportTools.isChargeable(params)) {
-				
+
 				if (DRSupportTools.isDischarging(params)) {
 					energyProduction += wattValue;
 				} else {
@@ -182,13 +144,13 @@ public class DRAnouncer {
 		}
 
 		for (FeedbackInstructionHandler d : drdevices) {
-			Map<String,?> params = instructionMap.get(d);
-			// again another reason for a mapping
+			Map<String, ?> params = instructionMap.get(d);
+
 			if (DRSupportTools.isChargeable(params)) {
-				
+
 				Integer wattValue = DRSupportTools.readWatts(params);
 				Integer costValue = DRSupportTools.readEnergyCost(params);
-				
+
 				if (DRSupportTools.isDischarging(params)) {
 					// TODO somehow update this price when battery changes
 					newPrice += costValue * wattValue / energyConsumption;
@@ -206,11 +168,11 @@ public class DRAnouncer {
 		Object[][] costArray = new Object[drdevices.size()][2];
 		for (int i = 0; i < drdevices.size(); i++) {
 			FeedbackInstructionHandler d = drdevices.get(i);
-			Map<String,?> params = instructionMap.get(d);
-			
+			Map<String, ?> params = instructionMap.get(d);
+
 			Integer wattValue = DRSupportTools.readWatts(params);
 			Integer costValue = DRSupportTools.readEnergyCost(params);
-			
+
 			// TODO double check you have done your maths correctly to factor in
 			// the convention of price being in KWh but using watts
 			costArray[i][0] = (costValue + newPrice) * wattValue;
@@ -257,38 +219,37 @@ public class DRAnouncer {
 			// decision I made)
 			for (int i = drdevices.size() - 1; i >= 0; i--) {
 				FeedbackInstructionHandler d = (FeedbackInstructionHandler) costArray[i][1];
-				Map<String,?> params = instructionMap.get(d);
-				
+				Map<String, ?> params = instructionMap.get(d);
+
 				Integer wattValue = DRSupportTools.readWatts(params);
 				Integer minValue = DRSupportTools.readMinWatts(params);
 				Integer energyCost = DRSupportTools.readEnergyCost(params);
-			
+
 				// check if we can reduce consumption
 				if (wattValue > minValue) {
 
 					// check if we are discharging battery
 					if (DRSupportTools.isChargeable(params)) {
-						
 
-//						if (settings.getEnergyCost() > dr.getEnergyCost()) {
-//							if (dr.isDischarging()) {
-//
-//								// reducing the battery would cause more energy
-//								// from
-//								// the grid
-//								// if grid energy costs more keep the battery
-//								// going
-//
-//								continue;
-//
-//							} else {
-//								if (dr.getCharge() > 0) {
-//									// Problem im having here is that the code
-//									// below is for shreding
-//									// but I need to increase just for discharge
-//								}
-//							}
-//						}
+						// if (settings.getEnergyCost() > dr.getEnergyCost()) {
+						// if (dr.isDischarging()) {
+						//
+						// // reducing the battery would cause more energy
+						// // from
+						// // the grid
+						// // if grid energy costs more keep the battery
+						// // going
+						//
+						// continue;
+						//
+						// } else {
+						// if (dr.getCharge() > 0) {
+						// // Problem im having here is that the code
+						// // below is for shreding
+						// // but I need to increase just for discharge
+						// }
+						// }
+						// }
 
 						// TODO add logic here to decide to discharge
 
@@ -301,8 +262,6 @@ public class DRAnouncer {
 							: wattValue - minValue;
 
 					System.out.println("reduceAmount" + appliedenergyReduction);
-
-					
 
 					// Im annoyed by this instruction because it is only reduce
 					// and not gain
@@ -333,15 +292,15 @@ public class DRAnouncer {
 			// that these devices most likely have room to power on more)
 			for (int i = 0; i < drdevices.size(); i++) {
 				FeedbackInstructionHandler d = (FeedbackInstructionHandler) costArray[i][1];
-				Map<String,?> params = instructionMap.get(d);
-				
+				Map<String, ?> params = instructionMap.get(d);
+
 				Integer wattValue = DRSupportTools.readWatts(params);
 				Integer maxValue = DRSupportTools.readMaxWatts(params);
 				Integer energyCost = DRSupportTools.readEnergyCost(params);
-				
+
 				if (wattValue < maxValue) {
 					if ("true".equals(params.get("chargeable"))) {
-						
+
 						if ("true".equals(params.get("isDischarging"))) {
 
 							// TODO somehow decide whether to turn off battery,
@@ -366,7 +325,7 @@ public class DRAnouncer {
 
 					// TODO remove print statement
 					System.out.println("about to increase " + appliedenergyIncrease);
-					
+
 					setWattageInstruction(d, appliedenergyIncrease, shouldDischarge);
 
 					// we were able to increase to match demand no need for more
