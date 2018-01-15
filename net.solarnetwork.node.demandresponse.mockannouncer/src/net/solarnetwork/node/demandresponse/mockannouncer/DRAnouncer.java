@@ -105,11 +105,11 @@ public class DRAnouncer {
 				Map<String,?> test = handler.processInstructionWithFeedback(instr).getResultParameters();
 				if (test != null) {
 					test = handler.processInstructionWithFeedback(instr).getResultParameters();
-					if ("true".equals(test.get("drcapable"))) {
+					if (DRSupportTools.isDRCapable(test)) {
 						System.out.println("got instance");
 						// another reason for a mapping is it gets rid of the
 						// subtypes of the DRDevice interface
-						if ("true".equals(test.get("chargeable"))) {
+						if (DRSupportTools.isChargeable(test)) {
 							System.out.println("is also chargealbe");
 						}
 
@@ -148,18 +148,12 @@ public class DRAnouncer {
 			Map<String,?> params = instructionMap.get(d);
 			// again a mapping would be so much better for this
 			
-			String wattString = (String) params.get("watts");
-			Integer wattValue = 0;
-			if (wattString != null) {
-				try {
-					wattValue = Integer.parseInt(wattString);
-				}catch (NumberFormatException e){
-					//WattValue is 0 
-				}
-			}
-			if ("true".equals(params.get("chargeable"))) {
+			
+			Integer wattValue = DRSupportTools.readWatts(params);
+			
+			if (DRSupportTools.isChargeable(params)) {
 				
-				if ("true".equals(params.get("isDischarging"))) {
+				if (DRSupportTools.isDischarging(params)) {
 					energyProduction += wattValue;
 				} else {
 					energyConsumption += wattValue;
@@ -190,24 +184,12 @@ public class DRAnouncer {
 		for (FeedbackInstructionHandler d : drdevices) {
 			Map<String,?> params = instructionMap.get(d);
 			// again another reason for a mapping
-			if ("true".equals(params.get("chargeable"))) {
-				String wattString = (String) params.get("watts");
-				String costString = (String) params.get("energycost");
-				Integer wattValue = 0;
-				Integer costValue = 0;
-				if (wattString != null) {
-					try {
-						
-						//from looking at javadoc parseInt returns NumberFormatException for null 
-						//however parseDouble returns nullpointer exception be careful if datatype changes in future
-						
-						wattValue = Integer.parseInt(wattString);
-						costValue = Integer.parseInt(costString);
-					}catch (NumberFormatException e){
-						//WattValue is 0 
-					}
-				}
-				if ("true".equals(params.get("isDischarging"))) {
+			if (DRSupportTools.isChargeable(params)) {
+				
+				Integer wattValue = DRSupportTools.readWatts(params);
+				Integer costValue = DRSupportTools.readEnergyCost(params);
+				
+				if (DRSupportTools.isDischarging(params)) {
 					// TODO somehow update this price when battery changes
 					newPrice += costValue * wattValue / energyConsumption;
 				}
@@ -225,22 +207,10 @@ public class DRAnouncer {
 		for (int i = 0; i < drdevices.size(); i++) {
 			FeedbackInstructionHandler d = drdevices.get(i);
 			Map<String,?> params = instructionMap.get(d);
-			String wattString = (String) params.get("watts");
-			String costString = (String) params.get("energycost");
-			Integer wattValue = 0;
-			Integer costValue = 0;
-			if (wattString != null && costValue != null) {
-				try {
-					
-					//from looking at javadoc parseInt returns NumberFormatException for null 
-					//however parseDouble returns nullpointer exception be careful if datatype changes in future
-					
-					wattValue = Integer.parseInt(wattString);
-					costValue = Integer.parseInt(costString);
-				}catch (NumberFormatException e){
-					//WattValue is 0 
-				}
-			}
+			
+			Integer wattValue = DRSupportTools.readWatts(params);
+			Integer costValue = DRSupportTools.readEnergyCost(params);
+			
 			// TODO double check you have done your maths correctly to factor in
 			// the convention of price being in KWh but using watts
 			costArray[i][0] = (costValue + newPrice) * wattValue;
@@ -288,30 +258,16 @@ public class DRAnouncer {
 			for (int i = drdevices.size() - 1; i >= 0; i--) {
 				FeedbackInstructionHandler d = (FeedbackInstructionHandler) costArray[i][1];
 				Map<String,?> params = instructionMap.get(d);
-				String wattString = (String) params.get("watts");
-				String minString = (String) params.get("minwatts");
-				String energycostString = (String) params.get("energycost");
-				Integer wattValue = 0;
-				Integer minValue = 0;
-				Integer energyCost = 0;
-				if (wattString != null && minString != null) {
-					try {
-						
-						//from looking at javadoc parseInt returns NumberFormatException for null 
-						//however parseDouble returns nullpointer exception be careful if datatype changes in future
-						
-						wattValue = Integer.parseInt(wattString);
-						minValue = Integer.parseInt(minString);
-						energyCost = Integer.parseInt(energycostString);
-					}catch (NumberFormatException e){
-						//WattValue is 0 
-					}
-				}
+				
+				Integer wattValue = DRSupportTools.readWatts(params);
+				Integer minValue = DRSupportTools.readMinWatts(params);
+				Integer energyCost = DRSupportTools.readEnergyCost(params);
+			
 				// check if we can reduce consumption
 				if (wattValue > minValue) {
 
 					// check if we are discharging battery
-					if ("true".equals(params.get("chargeable"))) {
+					if (DRSupportTools.isChargeable(params)) {
 						
 
 //						if (settings.getEnergyCost() > dr.getEnergyCost()) {
@@ -378,25 +334,11 @@ public class DRAnouncer {
 			for (int i = 0; i < drdevices.size(); i++) {
 				FeedbackInstructionHandler d = (FeedbackInstructionHandler) costArray[i][1];
 				Map<String,?> params = instructionMap.get(d);
-				String wattString = (String) params.get("watts");
-				String maxString = (String) params.get("maxwatts");
-				String energycostString = (String) params.get("energycost");
-				Integer wattValue = 0;
-				Integer maxValue = 0;
-				Integer energyCost = 0;
-				if (wattString != null && maxString != null) {
-					try {
-						
-						//from looking at javadoc parseInt returns NumberFormatException for null 
-						//however parseDouble returns nullpointer exception be careful if datatype changes in future
-						
-						wattValue = Integer.parseInt(wattString);
-						maxValue = Integer.parseInt(maxString);
-						energyCost = Integer.parseInt(energycostString);
-					}catch (NumberFormatException e){
-						//WattValue is 0 
-					}
-				}
+				
+				Integer wattValue = DRSupportTools.readWatts(params);
+				Integer maxValue = DRSupportTools.readMaxWatts(params);
+				Integer energyCost = DRSupportTools.readEnergyCost(params);
+				
 				if (wattValue < maxValue) {
 					if ("true".equals(params.get("chargeable"))) {
 						
