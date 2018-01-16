@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 
-import net.solarnetwork.node.demandresponse.battery.DRDevice;
 import net.solarnetwork.node.reactor.FeedbackInstructionHandler;
 import net.solarnetwork.node.reactor.Instruction;
 import net.solarnetwork.node.reactor.InstructionHandler;
@@ -22,7 +21,6 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 	private Integer minPower = 0;
 	private Integer watts = 0;
 
-	@Deprecated 
 	public String getUID() {
 		return uid;
 	}
@@ -31,9 +29,8 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.uid = uid;
 	}
 
-	@Deprecated 
 	public String getGroupUID() {
-		// TODO Auto-generated method stub
+
 		return groupuid;
 	}
 
@@ -71,8 +68,8 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 			map.put("drcapable", "true");
 			map.put("watts", watts.toString());
 			map.put("energycost", energyCost.toString());
-				map.put("minwatts", minPower.toString());
-				map.put("maxwatts", maxPower.toString());
+			map.put("minwatts", minPower.toString());
+			map.put("maxwatts", maxPower.toString());
 			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);
 			return status;
 			// DEBUG TODO
@@ -124,9 +121,8 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		return status;
 	}
 
-	@Deprecated 
 	public Integer getEnergyCost() {
-		// TODO Auto-generated method stub
+
 		return energyCost;
 	}
 
@@ -134,9 +130,8 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.energyCost = energyCost;
 	}
 
-	@Deprecated 
 	public Integer getMaxPower() {
-		// TODO Auto-generated method stub
+
 		return maxPower;
 	}
 
@@ -144,9 +139,8 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.maxPower = maxPower;
 	}
 
-	@Deprecated 
 	public Integer getMinPower() {
-		// TODO Auto-generated method stub
+
 		return minPower;
 	}
 
@@ -154,12 +148,13 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.minPower = minPower;
 	}
 
-	@Deprecated 
+	@Deprecated
 	public Integer getWatts() {
-		// TODO Auto-generated method stub
+
 		return watts;
 	}
 
+	@Deprecated
 	public void setWatts(Integer watts) {
 		this.watts = watts;
 	}

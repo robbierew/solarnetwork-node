@@ -27,8 +27,11 @@ public class DRAnouncerDatumDataSource implements DatumDataSource<GeneralNodeEne
 
 	@Override
 	public GeneralNodeEnergyStorageDatum readCurrentDatum() {
-		// TODO Auto-generated method stub
-		return null;
+		settings.getLinkedInstance().drupdate();
+		// the datum will contain num devices as well as watts cost?
+		GeneralNodeEnergyStorageDatum datum = new GeneralNodeEnergyStorageDatum();
+		datum.putInstantaneousSampleValue("Num Devices", settings.getLinkedInstance().getNumdrdevices());
+		return datum;
 	}
 
 	public DRAnouncerSettings getSettings() {

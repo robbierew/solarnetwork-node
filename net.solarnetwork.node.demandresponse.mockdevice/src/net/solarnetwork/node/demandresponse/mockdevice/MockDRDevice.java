@@ -24,22 +24,17 @@ package net.solarnetwork.node.demandresponse.mockdevice;
 
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import net.solarnetwork.node.DatumDataSource;
-import net.solarnetwork.node.domain.GeneralNodeACEnergyDatum;
+import net.solarnetwork.node.job.SimpleManagedTriggerAndJobDetail;
 import net.solarnetwork.node.reactor.FeedbackInstructionHandler;
 import net.solarnetwork.node.reactor.Instruction;
 import net.solarnetwork.node.reactor.InstructionHandler;
 import net.solarnetwork.node.reactor.InstructionStatus;
 import net.solarnetwork.node.reactor.InstructionStatus.InstructionState;
 import net.solarnetwork.node.reactor.support.BasicInstructionStatus;
-import net.solarnetwork.node.settings.SettingSpecifier;
 import net.solarnetwork.node.settings.SettingSpecifierProvider;
-import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
-import net.solarnetwork.node.support.DatumDataSourceSupport;
 
 /**
  * Mock plugin to be the source of values for a GeneralNodeACEnergyDatum, this
@@ -54,104 +49,12 @@ import net.solarnetwork.node.support.DatumDataSourceSupport;
  * @author robert
  * @version 1.0
  */
-public class MockDRDevice extends DatumDataSourceSupport
-		implements DatumDataSource<GeneralNodeACEnergyDatum>, SettingSpecifierProvider, FeedbackInstructionHandler {
+public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements FeedbackInstructionHandler {
 
-	// default values
-	private String sourceId = "Mock DR Device";
-	private Integer minwatts = 0;
-	private Integer maxwatts = 10;
-	private Integer energycost = 1;
-	private Integer watts = 0;
+	private MockDRDeviceSettings settings;
 
-	private final AtomicReference<GeneralNodeACEnergyDatum> lastsample = new AtomicReference<GeneralNodeACEnergyDatum>();
-
-	@Override
-	public Class<? extends GeneralNodeACEnergyDatum> getDatumType() {
-		return GeneralNodeACEnergyDatum.class;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.solarnetwork.node.DatumDataSource#readCurrentDatum()
-	 * 
-	 * Returns a {@link GeneralNodeACEnergyDatum} the data in the datum is the
-	 * state of the simulated circuit.
-	 * 
-	 * @return A {@link GeneralNodeACEnergyDatum}
-	 * 
-	 */
-	@Override
-	public GeneralNodeACEnergyDatum readCurrentDatum() {
-		GeneralNodeACEnergyDatum prev = this.lastsample.get();
-		GeneralNodeACEnergyDatum datum = new GeneralNodeACEnergyDatum();
-		datum.setCreated(new Date());
-		datum.setSourceId(sourceId);
-		datum.setWatts(watts);
-		this.lastsample.compareAndSet(prev, datum);
-
-		return datum;
-	}
-
-	// Method get used by the settings page
-	public void setSourceId(String sourceId) {
-		this.sourceId = sourceId;
-	}
-
-	@Override
-	public String getSettingUID() {
-		return "net.solarnetwork.node.demandresponse.mockdevice";
-	}
-
-	@Override
-	public String getDisplayName() {
-		return "Mock DR Device";
-	}
-
-	// Puts the user configurable settings on the settings page
-	@Override
-	public List<SettingSpecifier> getSettingSpecifiers() {
-		MockDRDevice defaults = new MockDRDevice();
-		List<SettingSpecifier> results = getIdentifiableSettingSpecifiers();
-
-		// user enters text
-		results.add(new BasicTextFieldSettingSpecifier("sourceId", defaults.sourceId));
-		results.add(new BasicTextFieldSettingSpecifier("minwatts", defaults.minwatts.toString()));
-		results.add(new BasicTextFieldSettingSpecifier("maxwatts", defaults.maxwatts.toString()));
-		results.add(new BasicTextFieldSettingSpecifier("energycost", defaults.energycost.toString()));
-		return results;
-	}
-
-	public Integer getMinwatts() {
-		return minwatts;
-	}
-
-	public void setMinwatts(Integer minwatts) {
-		if (watts < minwatts) {
-			watts = minwatts;
-		}
-		this.minwatts = minwatts;
-	}
-
-	public Integer getMaxwatts() {
-		return maxwatts;
-	}
-
-	public void setMaxwatts(Integer maxwatts) {
-		if (watts > maxwatts) {
-			watts = maxwatts;
-		}
-		this.maxwatts = maxwatts;
-	}
-
-	public Integer getEnergycost() {
-		return energycost;
-	}
-
-	public void setEnergycost(Integer energycost) {
-		this.energycost = energycost;
-	}
+	// refactoring notes for myself due to the way OSGI is I need to break up
+	// this class into smaller classes and then configure them in OSGI
 
 	@Override
 	public boolean handlesTopic(String topic) {
@@ -173,10 +76,10 @@ public class MockDRDevice extends DatumDataSourceSupport
 			state = InstructionState.Completed;
 			Map<String, Object> map = new Hashtable<String, Object>(1);
 			map.put("drcapable", "true");
-			map.put("watts", watts.toString());
-			map.put("energycost", energycost.toString());
-			map.put("minwatts", minwatts.toString());
-			map.put("maxwatts", maxwatts.toString());
+			map.put("watts", settings.getWatts().toString());
+			map.put("energycost", settings.getEnergycost().toString());
+			map.put("minwatts", settings.getMinwatts().toString());
+			map.put("maxwatts", settings.getMaxwatts().toString());
 			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);
 			return status;
 			// DEBUG TODO
@@ -184,12 +87,12 @@ public class MockDRDevice extends DatumDataSourceSupport
 		}
 
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SHED_LOAD)) {
-			String param = instruction.getParameterValue(this.sourceId);
+			String param = instruction.getParameterValue(settings.getUID());
 			if (param != null) {
 				try {
 					double value = Double.parseDouble(param) + 0.5;// 0.5 for
 																	// rounding
-					watts = ((int) value > watts) ? 0 : watts - (int) value;
+					settings.setWatts(((int) value > settings.getWatts()) ? 0 : settings.getWatts() - (int) value);
 					state = InstructionState.Completed;
 				} catch (NumberFormatException e) {
 					state = InstructionState.Declined;
@@ -205,11 +108,13 @@ public class MockDRDevice extends DatumDataSourceSupport
 				try {
 					double value = Double.parseDouble(param);
 					if (value < 0) {
-						watts = 0;
-					} else if (value > maxwatts) {
-						watts = maxwatts;
+						settings.setWatts(0);
+						;
+					} else if (value > settings.getMaxwatts()) {
+						settings.setWatts(settings.getMaxwatts());
+						;
 					} else {
-						watts = (int) value;
+						settings.setWatts((int) value);
 					}
 					state = InstructionState.Completed;
 				} catch (NumberFormatException e) {
@@ -227,4 +132,13 @@ public class MockDRDevice extends DatumDataSourceSupport
 
 		return status;
 	}
+
+	public void setSettings(MockDRDeviceSettings settings) {
+		this.settings = settings;
+	}
+
+	public MockDRDeviceSettings getSettings() {
+		return settings;
+	}
+
 }

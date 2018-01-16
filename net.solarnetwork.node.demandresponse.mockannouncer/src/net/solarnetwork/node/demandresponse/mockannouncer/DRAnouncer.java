@@ -38,6 +38,9 @@ public class DRAnouncer {
 	private Collection<FeedbackInstructionHandler> feedbackInstructionHandlers;
 	private Collection<InstructionHandler> instructionHandlers;
 
+	// status variables for the datum source
+	private Integer numdrdevices = 0;
+
 	public DRAnouncerSettings getSettings() {
 		return settings;
 	}
@@ -99,6 +102,8 @@ public class DRAnouncer {
 			}
 
 		}
+
+		numdrdevices = drdevices.size();
 
 		// TODO print statement
 		System.out.println("energy calc");
@@ -375,5 +380,9 @@ public class DRAnouncer {
 	// configured in OSGI
 	public void setFeedbackInstructionHandlers(Collection<FeedbackInstructionHandler> feedbackInstructionHandlers) {
 		this.feedbackInstructionHandlers = feedbackInstructionHandlers;
+	}
+
+	public Integer getNumdrdevices() {
+		return numdrdevices;
 	}
 }
