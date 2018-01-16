@@ -58,7 +58,7 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 
 	@Override
 	public boolean handlesTopic(String topic) {
-		// TODO Auto-generated method stub
+		// TODO have it actualy check
 		return true;
 	}
 
@@ -72,22 +72,27 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 	public InstructionStatus processInstructionWithFeedback(Instruction instruction) {
 		InstructionState state;
 		if (instruction.getTopic().equals("getDRDeviceInstance")) {
-			// for now lets just get this working
-			state = InstructionState.Completed;
-			Map<String, Object> map = new Hashtable<String, Object>(1);
-			map.put("drcapable", "true");
-			map.put("watts", settings.getWatts().toString());
-			map.put("energycost", settings.getEnergycost().toString());
-			map.put("minwatts", settings.getMinwatts().toString());
-			map.put("maxwatts", settings.getMaxwatts().toString());
+			Map<String, Object> map = new Hashtable<String, Object>();
+			if (instruction.getParameterValue(settings.getDrsource()) == null) {
+				state = InstructionState.Declined;
+			} else {
+				// for now lets just get this working
+				state = InstructionState.Completed;
+
+				map.put("drcapable", "true");
+				map.put("watts", settings.getWatts().toString());
+				map.put("energycost", settings.getEnergycost().toString());
+				map.put("minwatts", settings.getMinwatts().toString());
+				map.put("maxwatts", settings.getMaxwatts().toString());
+			}
+
 			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);
 			return status;
-			// DEBUG TODO
-			// settings.setBatteryCharge(5.0);
+
 		}
 
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SHED_LOAD)) {
-			String param = instruction.getParameterValue(settings.getUID());
+			String param = instruction.getParameterValue(settings.getDrsource());
 			if (param != null) {
 				try {
 					double value = Double.parseDouble(param) + 0.5;// 0.5 for
@@ -109,10 +114,10 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 					double value = Double.parseDouble(param);
 					if (value < 0) {
 						settings.setWatts(0);
-						;
+
 					} else if (value > settings.getMaxwatts()) {
 						settings.setWatts(settings.getMaxwatts());
-						;
+
 					} else {
 						settings.setWatts((int) value);
 					}

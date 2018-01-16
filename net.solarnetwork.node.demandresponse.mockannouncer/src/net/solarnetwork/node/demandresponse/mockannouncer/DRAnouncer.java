@@ -369,6 +369,9 @@ public class DRAnouncer {
 	private void sendShedInstruction(InstructionHandler handler, Double shedamount) {
 		BasicInstruction instr = new BasicInstruction(InstructionHandler.TOPIC_SHED_LOAD, new Date(),
 				Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
+
+		// the convention I saw used from other classes is that the value of the
+		// shedload is from the UID for verification
 		instr.addParameter(settings.getUID(), shedamount.toString());
 		handler.processInstruction(instr);
 	}

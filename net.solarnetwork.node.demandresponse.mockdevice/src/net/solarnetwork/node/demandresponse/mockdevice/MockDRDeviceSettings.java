@@ -15,6 +15,7 @@ public class MockDRDeviceSettings extends DatumDataSourceSupport implements Sett
 	private Integer maxwatts = 10;
 	private Integer energycost = 1;
 	private Integer watts = 0;
+	private String drsource;
 
 	@Override
 	public String getSettingUID() {
@@ -36,6 +37,7 @@ public class MockDRDeviceSettings extends DatumDataSourceSupport implements Sett
 		results.add(new BasicTextFieldSettingSpecifier("minwatts", defaults.minwatts.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("maxwatts", defaults.maxwatts.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("energycost", defaults.energycost.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("drsource", defaults.drsource));
 		return results;
 	}
 
@@ -67,6 +69,15 @@ public class MockDRDeviceSettings extends DatumDataSourceSupport implements Sett
 
 	public void setEnergycost(Integer energycost) {
 		this.energycost = energycost;
+	}
+
+	// This is the sourceID of the DRAnouncer to which the device will follow
+	public String getDrsource() {
+		return drsource;
+	}
+
+	public void setDrsource(String drsource) {
+		this.drsource = drsource;
 	}
 
 	// protected as this is not set via the settings page but instead via demand
