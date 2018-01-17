@@ -28,7 +28,7 @@
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basenames"
-			value="net.solarnetwork.node.demandresponse.mockdevice.MockDRDeviceSettings" />
+			value="net.solarnetwork.node.demandresponse.mockdevice.MockDRDeviceDatumDataSource" />
 	</bean>
 
 	<!-- support localized strings for the periodic job settings in the GUI -->
@@ -44,10 +44,7 @@
 
 
 
-	<bean id="MockDRSettings"
-		class="net.solarnetwork.node.demandresponse.mockdevice.MockDRDeviceSettings">
-		<property name="messageSource" ref="messageSource" />
-	</bean>
+	
 
 	<!-- publish a "component factory" so our Foobar Inverter appears in the 
 		settings GUI -->
@@ -129,10 +126,11 @@
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
 								<bean class="net.solarnetwork.node.demandresponse.mockdevice.MockDRDeviceDatumDataSource">
-									<property name="settings" ref="MockDRSettings"/>
+									
 								</bean>
 							</entry>
-							<entry key="settings" value-ref="MockDRSettings"/>
+							<!-- I don't know what this is for -->
+							<!--  <entry key="settings" value-ref="MockDRSettings"/> -->
 							
 
 
@@ -140,7 +138,7 @@
 					</property>
 				</bean>
 			</property>
-			<property name="settings" ref="MockDRSettings" />
+			<!-- <property name="settings" ref="MockDRSettings" />  -->
 			<!--  <property name="instructionHandlers" ref="instructionHandlers" />-->
 		</bean>
 	</osgix:managed-service-factory>

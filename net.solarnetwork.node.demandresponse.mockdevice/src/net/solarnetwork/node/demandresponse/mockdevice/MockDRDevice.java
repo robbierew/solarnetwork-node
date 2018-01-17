@@ -71,6 +71,7 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 	@Override
 	public InstructionStatus processInstructionWithFeedback(Instruction instruction) {
 		InstructionState state;
+		MockDRDeviceDatumDataSource settings = getSettings();
 		if (instruction.getTopic().equals("getDRDeviceInstance")) {
 			Map<String, Object> map = new Hashtable<String, Object>();
 			if (instruction.getParameterValue(settings.getDrsource()) == null) {
@@ -142,8 +143,10 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 		this.settings = settings;
 	}
 
-	public MockDRDeviceSettings getSettings() {
-		return settings;
+	public MockDRDeviceDatumDataSource getSettings() {
+		// this seems wrong
+
+		return (MockDRDeviceDatumDataSource) getSettingSpecifierProvider();
 	}
 
 }
