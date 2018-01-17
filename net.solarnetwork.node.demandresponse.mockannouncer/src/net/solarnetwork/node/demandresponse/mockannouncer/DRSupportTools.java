@@ -29,7 +29,7 @@ public class DRSupportTools {
 	 * @return The wattage reading of the device
 	 */
 	public static Integer readWatts(Map<String, ?> params) {
-		return readValue("watts", params);
+		return readValue(WATTS_PARAM, params);
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class DRSupportTools {
 	 * @return The wattage reading of the device
 	 */
 	public static Integer readMaxWatts(Map<String, ?> params) {
-		return readValue("maxwatts", params);
+		return readValue(MAXWATTS_PARAM, params);
 	}
 
 	/**
@@ -58,7 +58,7 @@ public class DRSupportTools {
 	 * @return
 	 */
 	public static Integer readMinWatts(Map<String, ?> params) {
-		return readValue("minwatts", params);
+		return readValue(MINWATTS_PARAM, params);
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class DRSupportTools {
 	 * @return
 	 */
 	public static Integer readEnergyCost(Map<String, ?> params) {
-		return readValue("energycost", params);
+		return readValue(ENERGYCOST_PARAM, params);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class DRSupportTools {
 	 * @return
 	 */
 	public static boolean isChargeable(Map<String, ?> params) {
-		return readBoolean("chargeable", params);
+		return readBoolean(CHARGEABLE_PARAM, params);
 	}
 
 	/**
@@ -108,7 +108,7 @@ public class DRSupportTools {
 	 * @return
 	 */
 	public static boolean isDischarging(Map<String, ?> params) {
-		return readBoolean("isDischarging", params);
+		return readBoolean(DISCHARGING_PARAM, params);
 	}
 
 	// TODO fix behaviour

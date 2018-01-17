@@ -92,11 +92,7 @@ public class DRAnouncer {
 						drdevices.add(handler);
 						instructionMap.put(handler, test);
 
-						// TODO remove debug statement
-					} else if (test != null) {
-						System.out.println(test.getClass().toString());
 					}
-					System.out.println("asked for instance");
 				}
 
 			}

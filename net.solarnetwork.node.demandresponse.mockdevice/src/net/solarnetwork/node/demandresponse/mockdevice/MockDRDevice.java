@@ -63,23 +63,33 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 	}
 
 	@Override
+	// process an instruction just returning the status and not any feedback
 	public InstructionState processInstruction(Instruction instruction) {
 		InstructionStatus status = processInstructionWithFeedback(instruction);
 		return status.getAcknowledgedInstructionState();
 	}
 
 	@Override
+	/**
+	 * List of supported Instructions getDRDeviceInstance, Shed load, set
+	 * control parameter
+	 */
 	public InstructionStatus processInstructionWithFeedback(Instruction instruction) {
 		InstructionState state;
 		MockDRDeviceDatumDataSource settings = getSettings();
+
 		if (instruction.getTopic().equals("getDRDeviceInstance")) {
 			Map<String, Object> map = new Hashtable<String, Object>();
+
+			// check that this instruction came from the accepted source
 			if (instruction.getParameterValue(settings.getDrsource()) == null) {
+				// if not decline the instruction
 				state = InstructionState.Declined;
 			} else {
-				// for now lets just get this working
+
 				state = InstructionState.Completed;
 
+				// put values in the parameter map
 				map.put("drcapable", "true");
 				map.put("watts", settings.getWatts().toString());
 				map.put("energycost", settings.getEnergycost().toString());
@@ -92,23 +102,50 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 
 		}
 
+		// The shed load instruction reduces the wattage value by the set amount
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SHED_LOAD)) {
+			// the value to shed should be mapped to the name of the drsource as
+			// was the convention used
+			// by this instruction in classes not written by me.
 			String param = instruction.getParameterValue(settings.getDrsource());
 			if (param != null) {
 				try {
+
+					// I did not see anywhere it previous uses of this
+					// instruction the requirment it had to be an interger
+					// while DRDevice is set to integer values I read a double
+					// and turn it to an int
 					double value = Double.parseDouble(param) + 0.5;// 0.5 for
 																	// rounding
+
+					// TODO shed load should only be able to reduce to minwatts
+					// BUG
 					settings.setWatts(((int) value > settings.getWatts()) ? 0 : settings.getWatts() - (int) value);
 					state = InstructionState.Completed;
 				} catch (NumberFormatException e) {
+
+					// if we cannot parse any number decline the instruction
+					// because something went wrong
 					state = InstructionState.Declined;
 				}
 
 			} else {
+
+				// instruction came from an untrusted source decline the
+				// instruction
 				state = InstructionState.Declined;
 			}
 
+			// this instruction sets the wattage to a specific value rather than
+			// substracting it like shed load
+			// it is mainly used for increasing the wattage reading however it
+			// can be used to reduce
 		} else if (instruction.getTopic().equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
+
+			// TODO add verification somehow the reason the I get watts is
+			// because this instruction could technicly be used for other
+			// parameters by other class. I did not make this instruction and I
+			// dont fully know the conventions when using it.
 			String param = instruction.getParameterValue("watts");
 			if (param != null) {
 				try {

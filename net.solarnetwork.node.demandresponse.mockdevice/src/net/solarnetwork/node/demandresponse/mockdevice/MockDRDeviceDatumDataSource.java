@@ -13,12 +13,11 @@ import net.solarnetwork.node.support.DatumDataSourceSupport;
 public class MockDRDeviceDatumDataSource extends DatumDataSourceSupport
 		implements SettingSpecifierProvider, DatumDataSource<GeneralNodeACEnergyDatum> {
 
-	private String sourceId = "Mock DR Device";
 	private Integer minwatts = 0;
 	private Integer maxwatts = 10;
 	private Integer energycost = 1;
 	private Integer watts = 0;
-	private String drsource;
+	private String drsource = "";
 
 	@Override
 	public String getSettingUID() {
@@ -36,7 +35,6 @@ public class MockDRDeviceDatumDataSource extends DatumDataSourceSupport
 		List<SettingSpecifier> results = super.getIdentifiableSettingSpecifiers();
 
 		// user enters text
-		results.add(new BasicTextFieldSettingSpecifier("sourceId", defaults.sourceId));
 		results.add(new BasicTextFieldSettingSpecifier("minwatts", defaults.minwatts.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("maxwatts", defaults.maxwatts.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("energycost", defaults.energycost.toString()));
