@@ -17,12 +17,12 @@ import net.solarnetwork.node.reactor.FeedbackInstructionHandler;
 public class DRUnitTests {
 
 	private DRAnouncer dra;
-	private DRAnouncerSettings settings;
+	private DRAnouncerDatumDataSource settings;
 
 	@Before
 	public void initMethod() {
 		dra = new DRAnouncer();
-		settings = new DRAnouncerSettings();
+		settings = new DRAnouncerDatumDataSource();
 		dra.setSettings(settings);
 		settings.setUid("DREngine");
 	}

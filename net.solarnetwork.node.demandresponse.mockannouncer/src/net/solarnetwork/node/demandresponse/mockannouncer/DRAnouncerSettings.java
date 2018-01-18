@@ -13,7 +13,6 @@ import net.solarnetwork.util.OptionalServiceCollection;
 public class DRAnouncerSettings extends DatumDataSourceSupport implements SettingSpecifierProvider {
 
 	private Integer energyCost = 10;
-	private DRAnouncer linkedInstance;
 
 	// TODO refactor how linkinstance works
 
@@ -22,6 +21,8 @@ public class DRAnouncerSettings extends DatumDataSourceSupport implements Settin
 	// devices as close to this value without going over.
 	private Integer drtargetCost = 10;
 	private OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> poweredDevices;
+
+	private DRAnouncer linkedInstance;
 
 	@Override
 	public String getSettingUID() {
@@ -41,22 +42,8 @@ public class DRAnouncerSettings extends DatumDataSourceSupport implements Settin
 		DRAnouncerSettings defaults = new DRAnouncerSettings();
 		results.add(new BasicTextFieldSettingSpecifier("energyCost", defaults.energyCost.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("drtargetCost", defaults.drtargetCost.toString()));
-		results.add(new BasicTextFieldSettingSpecifier("poweredDevices.propertyFilters['UID']", "Main"));
-		results.add(new BasicTextFieldSettingSpecifier("poweredDevices.propertyFilters['groupUID']", ""));
 
 		return results;
-	}
-
-	public void setPoweredDevices(OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> powerDatums) {
-		this.poweredDevices = powerDatums;
-		if (linkedInstance != null) {
-			// linkedInstance.drupdate();
-		}
-
-	}
-
-	public OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> getPoweredDevices() {
-		return poweredDevices;
 	}
 
 	public Integer getEnergyCost() {
@@ -65,9 +52,6 @@ public class DRAnouncerSettings extends DatumDataSourceSupport implements Settin
 
 	public void setEnergyCost(Integer energyCost) {
 		this.energyCost = energyCost;
-		if (linkedInstance != null) {
-			// linkedInstance.drupdate();
-		}
 
 	}
 
@@ -77,9 +61,6 @@ public class DRAnouncerSettings extends DatumDataSourceSupport implements Settin
 
 	public void setDrtargetCost(Integer drtargetCost) {
 		this.drtargetCost = drtargetCost;
-		if (linkedInstance != null) {
-			// linkedInstance.drupdate();
-		}
 
 	}
 

@@ -9,13 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.solarnetwork.node.DatumDataSource;
-import net.solarnetwork.node.domain.EnergyDatum;
 import net.solarnetwork.node.reactor.FeedbackInstructionHandler;
 import net.solarnetwork.node.reactor.Instruction;
 import net.solarnetwork.node.reactor.InstructionHandler;
 import net.solarnetwork.node.reactor.support.BasicInstruction;
-import net.solarnetwork.util.OptionalServiceCollection;
 
 /**
  * Expirimental class looking into how a demand responce system my look like.
@@ -33,34 +30,29 @@ import net.solarnetwork.util.OptionalServiceCollection;
  *
  */
 public class DRAnouncer {
-	private DRAnouncerSettings settings;
-	private OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> poweredDevices;
+	private DRAnouncerDatumDataSource settings;
 	private Collection<FeedbackInstructionHandler> feedbackInstructionHandlers;
-	private Collection<InstructionHandler> instructionHandlers;
 
 	// status variables for the datum source
 	private Integer numdrdevices = 0;
 
-	public DRAnouncerSettings getSettings() {
+	public DRAnouncerDatumDataSource getSettings() {
 		return settings;
 	}
 
 	// configured in OSGI
-	public void setSettings(DRAnouncerSettings settings) {
+	public void setSettings(DRAnouncerDatumDataSource settings) {
 		this.settings = settings;
 
 		// TODO
 		// I don't like this coupling factor this somehow
 		// potentaly look into getting drupdate called from a cron expression
 		// rather than when a setting changes
-		settings.setLinkedInstance(this);
 	}
 
 	// TODO give this method a massive refactoring
 	protected void drupdate() {
 
-		// TODO remove
-		System.out.println("There are " + feedbackInstructionHandlers.size() + "fbih");
 		List<FeedbackInstructionHandler> drdevices = new ArrayList<FeedbackInstructionHandler>();
 
 		// the reason the mapping should be in String String is because perhapes
@@ -70,9 +62,9 @@ public class DRAnouncer {
 		for (FeedbackInstructionHandler handler : feedbackInstructionHandlers) {
 
 			// TODO change the instruction from a string to a static referance
-			if (handler.handlesTopic("getDRDeviceInstance")) {
+			if (handler.handlesTopic(DRSupportTools.DRPARAMS_INSTRUCTION)) {
 
-				BasicInstruction instr = new BasicInstruction("getDRDeviceInstance", new Date(),
+				BasicInstruction instr = new BasicInstruction(DRSupportTools.DRPARAMS_INSTRUCTION, new Date(),
 						Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
 
 				// The devices want to know where the instruction came from for
@@ -83,11 +75,6 @@ public class DRAnouncer {
 				if (test != null) {
 					test = handler.processInstructionWithFeedback(instr).getResultParameters();
 					if (DRSupportTools.isDRCapable(test)) {
-						System.out.println("got instance");
-
-						if (DRSupportTools.isChargeable(test)) {
-							System.out.println("is also chargealbe");
-						}
 
 						drdevices.add(handler);
 						instructionMap.put(handler, test);
@@ -99,10 +86,8 @@ public class DRAnouncer {
 
 		}
 
+		// This value is used by the datumdatasource
 		numdrdevices = drdevices.size();
-
-		// TODO print statement
-		System.out.println("energy calc");
 
 		// energyConsumption is energy used when not discharging
 		Integer energyConsumption = 0;
@@ -114,20 +99,12 @@ public class DRAnouncer {
 
 			Integer wattValue = DRSupportTools.readWatts(params);
 
-			if (DRSupportTools.isChargeable(params)) {
-
-				if (DRSupportTools.isDischarging(params)) {
-					energyProduction += wattValue;
-				} else {
-					energyConsumption += wattValue;
-				}
+			if (DRSupportTools.isChargeable(params) && DRSupportTools.isDischarging(params)) {
+				energyProduction += wattValue;
 			} else {
 				energyConsumption += wattValue;
 			}
 		}
-
-		// TODO remove print statement
-		System.out.println("price calc");
 
 		// TODO check non negative (a case when this can happen is when batterys
 		// discharge more than demand)
@@ -135,6 +112,7 @@ public class DRAnouncer {
 		// eg if 50% energy from grid at $2 and 50% from battery at $1 energy is
 		// priced at $1.50
 		// cost and battery costs
+
 		Integer gridEnergy = energyConsumption - energyProduction;
 		Double newPrice = settings.getEnergyCost() * (double) gridEnergy / energyConsumption;
 
@@ -159,9 +137,6 @@ public class DRAnouncer {
 
 			}
 		}
-
-		// TODO remove print statement
-		System.out.println("sort calc");
 
 		// need an object array cause I want to relate double with drdevice
 		// the reason im not using mapping is multiple drdevices could have the
@@ -199,22 +174,16 @@ public class DRAnouncer {
 
 		});
 
-		// TODO remove print statement
-		System.out.println("if statment part");
-		// Determine if we need demand response
-
-		// I don't think we need this variable
+		// I don't think we need this variable, my plan for this was if a
+		// battery starts discharging it could offset the grid making the price
+		// change
 		Double updatedCost = totalCost;
-
-		// TODO remove debug statement
-		System.out.println("debug" + totalCost + " " + settings.getDrtargetCost());
 
 		// TODO refactor this so much
 		Boolean shouldDischarge = null;
 
 		// if this is true we need to reduce demand to get costs down
 		if (totalCost > settings.getDrtargetCost()) {
-			System.out.println("decrease section");
 
 			// going from largest cost to smallest cost (this is just a design
 			// decision I made)
@@ -286,11 +255,11 @@ public class DRAnouncer {
 
 			// if true we need to increase demand
 		} else if (totalCost < settings.getDrtargetCost()) {
-			// TODO remove print statement
-			System.out.println("increase section");
-			System.out.println("drd " + drdevices.size());
+
 			// this time we start with the cheapest devices (my reasoning is
-			// that these devices most likely have room to power on more)
+			// that these devices most likely have room to power on more) so we
+			// can acheive nessisary requirements with little number of
+			// instructions
 			for (int i = 0; i < drdevices.size(); i++) {
 				FeedbackInstructionHandler d = (FeedbackInstructionHandler) costArray[i][1];
 				Map<String, ?> params = instructionMap.get(d);
@@ -300,32 +269,32 @@ public class DRAnouncer {
 				Integer energyCost = DRSupportTools.readEnergyCost(params);
 
 				if (wattValue < maxValue) {
-					if ("true".equals(params.get("chargeable"))) {
 
-						if ("true".equals(params.get("isDischarging"))) {
-
-							// TODO somehow decide whether to turn off battery,
-							// charge battery or discharge more
-						} else {
-							shouldDischarge = false;
-						}
-					}
+					// TODO decide on what to do for battery
+					// if ("true".equals(params.get("chargeable"))) {
+					//
+					// if ("true".equals(params.get("isDischarging"))) {
+					//
+					// // TODO somehow decide whether to turn off battery,
+					// // charge battery or discharge more
+					// } else {
+					// shouldDischarge = false;
+					// }
+					// }
 
 					// if we are here it is okay to increase usage
 					Double increaseAmount = settings.getDrtargetCost() - totalCost;
 
-					System.out.println("increaseAmount " + increaseAmount);
-
+					// energy increase is the amount of energy we want to
+					// increase by
 					Double energyIncrease = increaseAmount / (energyCost + settings.getEnergyCost());
 					energyIncrease += wattValue;
 
-					System.out.println("energy Increase " + energyIncrease);
-
+					// appliedenergyIncrease is the value we are going to send
+					// as the maxValue can limit us to how much we can increase
+					// by
 					Double appliedenergyIncrease = Math.min(energyIncrease, maxValue);
 					Double energydelta = appliedenergyIncrease - wattValue;
-
-					// TODO remove print statement
-					System.out.println("about to increase " + appliedenergyIncrease);
 
 					setWattageInstruction(d, appliedenergyIncrease, shouldDischarge);
 
@@ -376,12 +345,15 @@ public class DRAnouncer {
 		return feedbackInstructionHandlers;
 	}
 
-	// configured in OSGI
+	// configured in OSGI we automatically get a collection of
+	// FeedbackInstructionHandlers as they come threw
 	public void setFeedbackInstructionHandlers(Collection<FeedbackInstructionHandler> feedbackInstructionHandlers) {
 		this.feedbackInstructionHandlers = feedbackInstructionHandlers;
 	}
 
+	// This is for the DatumDataSource
 	public Integer getNumdrdevices() {
 		return numdrdevices;
 	}
+
 }

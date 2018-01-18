@@ -1,52 +1,98 @@
 package net.solarnetwork.node.demandresponse.mockannouncer;
 
+import java.util.List;
+
 import net.solarnetwork.node.DatumDataSource;
 import net.solarnetwork.node.domain.GeneralNodeEnergyStorageDatum;
+import net.solarnetwork.node.settings.SettingSpecifier;
+import net.solarnetwork.node.settings.SettingSpecifierProvider;
+import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
+import net.solarnetwork.node.support.DatumDataSourceSupport;
 
-public class DRAnouncerDatumDataSource implements DatumDataSource<GeneralNodeEnergyStorageDatum> {
+public class DRAnouncerDatumDataSource extends DatumDataSourceSupport
+		implements SettingSpecifierProvider, DatumDataSource<GeneralNodeEnergyStorageDatum> {
+	private Integer energyCost = 10;
 
-	private DRAnouncerSettings settings;
+	// TODO refactor how linkinstance works
+
+	// we will use this value as a means to calebrate the DR a lower value means
+	// more likly to turn things off. The goal is to get the cost of powering
+	// devices as close to this value without going over.
+	private Integer drtargetCost = 10;
+
+	private DRAnouncer linkedInstance;
 
 	@Override
-	public String getUID() {
-		// TODO Auto-generated method stub
-		return null;
+	public String getSettingUID() {
+		return "net.solarnetwork.node.demandresponse.mockannouncer";
 	}
 
 	@Override
-	public String getGroupUID() {
-		// TODO Auto-generated method stub
-		return null;
+	public String getDisplayName() {
+		return "DR Engine";
+	}
+
+	@Override
+	public List<SettingSpecifier> getSettingSpecifiers() {
+		List<SettingSpecifier> results = getIdentifiableSettingSpecifiers();
+		DRAnouncerDatumDataSource defaults = new DRAnouncerDatumDataSource();
+
+		// cost per watt hour for grid energy
+		results.add(new BasicTextFieldSettingSpecifier("energyCost", defaults.energyCost.toString()));
+
+		// the target cost per hour. This strategy tries to preform a demand
+		// response to get closest without going over
+		results.add(new BasicTextFieldSettingSpecifier("drtargetCost", defaults.drtargetCost.toString()));
+
+		return results;
+	}
+
+	public Integer getEnergyCost() {
+		return energyCost;
+	}
+
+	public void setEnergyCost(Integer energyCost) {
+		this.energyCost = energyCost;
+
+	}
+
+	public Integer getDrtargetCost() {
+		return drtargetCost;
+	}
+
+	public void setDrtargetCost(Integer drtargetCost) {
+		this.drtargetCost = drtargetCost;
+
+	}
+
+	public DRAnouncer getDRInstance() {
+		return linkedInstance;
+	}
+
+	public void setDRInstance(DRAnouncer linkedInstance) {
+		this.linkedInstance = linkedInstance;
+		linkedInstance.setSettings(this);
 	}
 
 	@Override
 	public Class<? extends GeneralNodeEnergyStorageDatum> getDatumType() {
-		// TODO Auto-generated method stub
 		return GeneralNodeEnergyStorageDatum.class;
 	}
 
 	@Override
 	public GeneralNodeEnergyStorageDatum readCurrentDatum() {
 		try {
-			settings.getLinkedInstance().drupdate();
+			linkedInstance.drupdate();
 		} catch (RuntimeException e) {
+			// the try catch is only for debugging I have noticed that
 			e.printStackTrace();
 		}
 
 		// the datum will contain num devices as well as watts cost?
 		GeneralNodeEnergyStorageDatum datum = new GeneralNodeEnergyStorageDatum();
-		datum.putInstantaneousSampleValue("Num Devices", settings.getLinkedInstance().getNumdrdevices());
-		datum.setSourceId(settings.getUID());
+		datum.putInstantaneousSampleValue("Num Devices", linkedInstance.getNumdrdevices());
+		datum.setSourceId(getUID());
 		return datum;
-	}
-
-	public DRAnouncerSettings getSettings() {
-		return settings;
-	}
-
-	public void setSettings(DRAnouncerSettings settings) {
-		this.settings = settings;
-
 	}
 
 }
