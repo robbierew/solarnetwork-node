@@ -72,7 +72,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 			return status;
 
 		}
-
+		// TODO maxdraw has not been checked for
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SHED_LOAD)) {
 			String param = instruction.getParameterValue(settings.getDrEngineName());
 			if (param != null) {
@@ -87,7 +87,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 						battery.setCharge(draw);
 						state = InstructionState.Completed;
 					} else {
-						// if
+						// decline because of invalid draw value
 						state = InstructionState.Declined;
 					}
 				} catch (NumberFormatException e) {
@@ -159,6 +159,8 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 	}
 
 	public DRBatteryDatumDataSource getDRBatterySettings() {
+		// Because of the way the OSGI is configured this is the best way I know
+		// to get access to the settings
 		return (DRBatteryDatumDataSource) getSettingSpecifierProvider();
 	}
 

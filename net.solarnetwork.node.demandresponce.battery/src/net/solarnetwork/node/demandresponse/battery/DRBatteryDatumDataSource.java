@@ -115,8 +115,6 @@ public class DRBatteryDatumDataSource extends DatumDataSourceSupport
 	public List<SettingSpecifier> getSettingSpecifiers() {
 		List<SettingSpecifier> results = super.getIdentifiableSettingSpecifiers();
 		DRBatteryDatumDataSource defaults = new DRBatteryDatumDataSource();
-		results.add(new BasicTextFieldSettingSpecifier("poweredDevices.propertyFilters['UID']", "Main"));
-		results.add(new BasicTextFieldSettingSpecifier("poweredDevices.propertyFilters['groupUID']", ""));
 		results.add(new BasicTextFieldSettingSpecifier("batteryMaxCharge", defaults.maxCharge.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryMaxDraw", defaults.maxDraw.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCharge", defaults.charge.toString()));
@@ -168,17 +166,6 @@ public class DRBatteryDatumDataSource extends DatumDataSourceSupport
 	// of the battery
 	public Double getBatteryCharge() {
 		return this.charge;
-	}
-
-	@Deprecated
-	public void setPoweredDevices(OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> powerDatums) {
-		this.poweredDevices = powerDatums;
-
-	}
-
-	@Deprecated
-	public OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> getPoweredDevices() {
-		return poweredDevices;
 	}
 
 	public Integer getBatteryCost() {
