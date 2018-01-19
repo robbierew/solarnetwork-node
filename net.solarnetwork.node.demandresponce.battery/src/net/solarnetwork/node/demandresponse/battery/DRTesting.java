@@ -57,7 +57,7 @@ public class DRTesting extends DatumDataSourceSupport
 		}
 		datum.putStatusSampleValue("Magic", magicflag);
 		datum.putInstantaneousSampleValue("Battery Power", mb.readCharge());
-		datum.putInstantaneousSampleValue("Battery Percent", mb.percentageCapacity());
+		datum.putInstantaneousSampleValue("Battery Percent", mb.capacityFraction());
 		return datum;
 
 	}

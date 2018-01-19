@@ -1,10 +1,16 @@
 package net.solarnetwork.node.demandresponse.battery;
 
 import java.util.Date;
+import java.util.List;
 
 import net.solarnetwork.node.DatumDataSource;
 import net.solarnetwork.node.domain.EnergyDatum;
 import net.solarnetwork.node.domain.GeneralNodeEnergyStorageDatum;
+import net.solarnetwork.node.settings.SettingSpecifier;
+import net.solarnetwork.node.settings.SettingSpecifierProvider;
+import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
+import net.solarnetwork.node.support.DatumDataSourceSupport;
+import net.solarnetwork.util.OptionalServiceCollection;
 
 /**
  * DatumDataSource for the Demand response battery. When datums are read
@@ -13,19 +19,19 @@ import net.solarnetwork.node.domain.GeneralNodeEnergyStorageDatum;
  * @author robert
  *
  */
-public class DRBatteryDatumDataSource implements DatumDataSource<GeneralNodeEnergyStorageDatum> {
+public class DRBatteryDatumDataSource extends DatumDataSourceSupport
+		implements SettingSpecifierProvider, DatumDataSource<GeneralNodeEnergyStorageDatum> {
 
-	private DRBatterySettings settings;
+	private Double maxCharge = 10.0;
+	private Double charge = 10.0;
+	private MockBattery mockbattery;
+	private OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> poweredDevices;
+	private Integer cost = 1000;
+	private Integer cycles = 10000;
 
-	@Override
-	public String getUID() {
-		return settings.getUID();
-	}
+	private String drEngineName = "DREngine";
 
-	@Override
-	public String getGroupUID() {
-		return settings.getGroupUID();
-	}
+	private Double maxDraw = 1.0;
 
 	@Override
 	public Class<? extends GeneralNodeEnergyStorageDatum> getDatumType() {
@@ -35,63 +41,160 @@ public class DRBatteryDatumDataSource implements DatumDataSource<GeneralNodeEner
 	@Override
 	public GeneralNodeEnergyStorageDatum readCurrentDatum() {
 		// check we have access to configured settings
-		if (settings != null) {
 
-			// create new datum
-			GeneralNodeEnergyStorageDatum datum = new GeneralNodeEnergyStorageDatum();
-			datum.setCreated(new Date());
-			datum.setSourceId(getUID());
+		// create new datum
+		GeneralNodeEnergyStorageDatum datum = new GeneralNodeEnergyStorageDatum();
+		datum.setCreated(new Date());
+		datum.setSourceId(getUID());
 
-			// populate the datum with values from the battery
-			MockBattery mb = settings.getMockBattery();
-			datum.setAvailableEnergy((long) mb.readCharge());
-			datum.setAvailableEnergyPercentage(mb.percentageCapacity());
-
-			return datum;
-
+		// populate the datum with values from the battery
+		MockBattery mb = getMockBattery();
+		datum.setAvailableEnergy((long) mb.readCharge());
+		datum.setAvailableEnergyPercentage(mb.capacityFraction());
+		if (mb.readDraw() == 0) {
+			datum.putStatusSampleValue("Mode", "Idle");
+		} else if (mb.readDraw() > 0) {
+			datum.putStatusSampleValue("Mode", "Discharging");
 		} else {
-
-			return null;
-
+			datum.putStatusSampleValue("Mode", "Charging");
 		}
+
+		return datum;
 
 	}
 
-	/**
-	 * Looks at the datums from other plugins and reads their wattage reading.
-	 * This is the powerdraw the battery will have
-	 */
+	// /**
+	// * Looks at the datums from other plugins and reads their wattage reading.
+	// * This is the powerdraw the battery will have
+	// */
+	// @Deprecated
+	// private void calcBatteryDraw() {
+	//
+	// Double sum = 0.0;
+	// Iterable<DatumDataSource<? extends EnergyDatum>> datumIterable =
+	// settings.getPoweredDevices().services();
+	//
+	// for (DatumDataSource<? extends EnergyDatum> d : datumIterable) {
+	//
+	// EnergyDatum datum = d.readCurrentDatum();
+	//
+	// // not all readings have a datum or a wattage reading which is why
+	// // one must check for nulls
+	// if (datum != null) {
+	// Integer reading = datum.getWatts();
+	// if (reading != null) {
+	// sum += reading.doubleValue();
+	// }
+	// }
+	// }
+	//
+	// // update the batteries powerdraw
+	// settings.getMockBattery().setDraw(sum);
+	//
+	// }
+
+	public String getDrEngineName() {
+		return drEngineName;
+	}
+
+	public void setDrEngineName(String drEngineName) {
+		this.drEngineName = drEngineName;
+	}
+
+	@Override
+	public String getSettingUID() {
+		return "net.solarnetwork.node.demandresponse.battery";
+	}
+
+	@Override
+	public String getDisplayName() {
+		return "DR Battery";
+	}
+
+	@Override
+	public List<SettingSpecifier> getSettingSpecifiers() {
+		List<SettingSpecifier> results = super.getIdentifiableSettingSpecifiers();
+		DRBatteryDatumDataSource defaults = new DRBatteryDatumDataSource();
+		results.add(new BasicTextFieldSettingSpecifier("poweredDevices.propertyFilters['UID']", "Main"));
+		results.add(new BasicTextFieldSettingSpecifier("poweredDevices.propertyFilters['groupUID']", ""));
+		results.add(new BasicTextFieldSettingSpecifier("batteryMaxCharge", defaults.maxCharge.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("batteryMaxDraw", defaults.maxDraw.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("batteryCharge", defaults.charge.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("batteryCost", defaults.cost.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("batteryCycles", defaults.cycles.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("drEngineName", defaults.drEngineName));
+		return results;
+	}
+
+	public void setMockBattery(MockBattery mockbattery) {
+		this.mockbattery = mockbattery;
+	}
+
+	public MockBattery getMockBattery() {
+		return this.mockbattery;
+	}
+
+	public void setBatteryMaxCharge(Double charge) {
+		if (charge != null) {
+			mockbattery.setMax(charge);
+		}
+		this.maxCharge = charge;
+	}
+
+	public Double getBatteryMaxCharge() {
+		return maxCharge;
+	}
+
+	public Double getMaxDraw() {
+		return maxDraw;
+	}
+
+	public void setMaxDraw(Double maxDraw) {
+		this.maxDraw = maxDraw;
+		if (mockbattery.readDraw() > maxDraw) {
+			mockbattery.setDraw(maxDraw);
+		}
+	}
+
+	public void setBatteryCharge(Double charge) {
+		if (charge != null) {
+			mockbattery.setCharge(charge);
+		}
+		this.charge = charge;
+	}
+
+	// note this returns the charge value the user set in settings page not the
+	// current charge
+	// of the battery
+	public Double getBatteryCharge() {
+		return this.charge;
+	}
+
 	@Deprecated
-	private void calcBatteryDraw() {
-
-		Double sum = 0.0;
-		Iterable<DatumDataSource<? extends EnergyDatum>> datumIterable = settings.getPoweredDevices().services();
-
-		for (DatumDataSource<? extends EnergyDatum> d : datumIterable) {
-
-			EnergyDatum datum = d.readCurrentDatum();
-
-			// not all readings have a datum or a wattage reading which is why
-			// one must check for nulls
-			if (datum != null) {
-				Integer reading = datum.getWatts();
-				if (reading != null) {
-					sum += reading.doubleValue();
-				}
-			}
-		}
-
-		// update the batteries powerdraw
-		settings.getMockBattery().setDraw(sum);
+	public void setPoweredDevices(OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> powerDatums) {
+		this.poweredDevices = powerDatums;
 
 	}
 
-	public void setDRBatterySettings(DRBatterySettings settings) {
-		this.settings = settings;
+	@Deprecated
+	public OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> getPoweredDevices() {
+		return poweredDevices;
 	}
 
-	public DRBatterySettings getDRBatterySettings() {
-		return settings;
+	public Integer getBatteryCost() {
+		return cost;
+	}
+
+	public void setBatteryCost(Integer cost) {
+		this.cost = cost;
+	}
+
+	public Integer getBatteryCycles() {
+		return cycles;
+	}
+
+	public void setBatteryCycles(Integer cycles) {
+		this.cycles = cycles;
 	}
 
 }

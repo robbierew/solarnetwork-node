@@ -28,7 +28,7 @@
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basenames"
-			value="net.solarnetwork.node.demandresponse.battery.DRBatterySettings" />
+			value="net.solarnetwork.node.demandresponse.battery.DRBatteryDatumDataSource" />
 	</bean>
 
 	<!-- support localized strings for the periodic job settings in the GUI -->
@@ -44,7 +44,7 @@
 
 
 
-	<bean id="DRBatterySettings"
+<!--  	<bean id="DRBatterySettings"
 		class="net.solarnetwork.node.demandresponse.battery.DRBatterySettings">
 		<property name="MockBattery">
 			<bean class="net.solarnetwork.node.demandresponse.battery.MockBattery" />
@@ -63,6 +63,7 @@
 			</bean>
 		</property>
 	</bean>
+-->
 <!-- 
 	<bean id="DRBattery" class="net.solarnetwork.node.demandresponse.battery.DRBattery">
 		<property name="DRBatterySettings" ref="DRBatterySettings" />
@@ -149,10 +150,13 @@
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
 								<bean class="net.solarnetwork.node.demandresponse.battery.DRBatteryDatumDataSource">
-									<property name="DRBatterySettings" ref="DRBatterySettings"/>
+									<property name="MockBattery">
+										<bean class="net.solarnetwork.node.demandresponse.battery.MockBattery" />
+										</property>
+									<property name="messageSource" ref="messageSource" />
 								</bean>
 							</entry>
-							<entry key="batterySettings" value-ref="DRBatterySettings"/>
+							
 							
 
 
@@ -160,7 +164,7 @@
 					</property>
 				</bean>
 			</property>
-			<property name="DRBatterySettings" ref="DRBatterySettings" />
+			
 			<property name="instructionHandlers" ref="instructionHandlers" />
 		</bean>
 	</osgix:managed-service-factory>
