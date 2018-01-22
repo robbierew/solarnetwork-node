@@ -104,53 +104,59 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 		// TODO this does not follow my current conventions for charging
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
 
-			// TODO update DRSupportTools to take better advantage of this stuff
-			String param = instruction.getParameterValue(DRSupportTools.WATTS_PARAM);
-			String param2 = instruction.getParameterValue(DRSupportTools.DISCHARGING_PARAM);
+			if (instruction.getParameterValue(settings.getDrEngineName()) != null) {
+				// TODO update DRSupportTools to take better advantage of this
+				// stuff
+				String param = instruction.getParameterValue(DRSupportTools.WATTS_PARAM);
+				String param2 = instruction.getParameterValue(DRSupportTools.DISCHARGING_PARAM);
 
-			if (param != null && param2 != null) {
-				try {
-					// TODO remove debug statement
-					System.out.println("value is " + param);
+				if (param != null && param2 != null) {
+					try {
+						// TODO remove debug statement
+						System.out.println("value is " + param);
 
-					// TODO need to decide of datatype conventions
-					double value = Double.parseDouble(param);
-					boolean discharge = Boolean.parseBoolean(param2);
+						// TODO need to decide of datatype conventions
+						double value = Double.parseDouble(param);
+						boolean discharge = Boolean.parseBoolean(param2);
 
-					if (value < 0) {
-						// negative value does not make sence decline rather
-						// than assume positive
+						if (value < 0) {
+							// negative value does not make sence decline rather
+							// than assume positive
+							state = InstructionState.Declined;
+
+						} else if (value > settings.getMaxDraw()) {
+							// the implementation of mockbattery has a negative
+							// draw
+							// as charging and positive draw as discharging
+							if (discharge) {
+								battery.setDraw(settings.getMaxDraw());
+							} else {
+								battery.setDraw(-settings.getMaxDraw());
+							}
+							state = InstructionState.Completed;
+
+						} else {
+							// the implementation of mockbattery has a negative
+							// draw
+							// as charging and positive draw as discharging
+							if (discharge) {
+								battery.setDraw(value);
+							} else {
+								battery.setDraw(-value);
+							}
+							state = InstructionState.Completed;
+
+						}
+
+					} catch (NumberFormatException e) {
 						state = InstructionState.Declined;
-
-					} else if (value > settings.getMaxDraw()) {
-						// the implementation of mockbattery has a negative draw
-						// as charging and positive draw as discharging
-						if (discharge) {
-							battery.setDraw(settings.getMaxDraw());
-						} else {
-							battery.setDraw(-settings.getMaxDraw());
-						}
-						state = InstructionState.Completed;
-
-					} else {
-						// the implementation of mockbattery has a negative draw
-						// as charging and positive draw as discharging
-						if (discharge) {
-							battery.setDraw(value);
-						} else {
-							battery.setDraw(-value);
-						}
-						state = InstructionState.Completed;
-
 					}
 
-				} catch (NumberFormatException e) {
+				} else {
 					state = InstructionState.Declined;
 				}
-
-			} else {
-				state = InstructionState.Declined;
 			}
+
 		}
 
 		InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date());

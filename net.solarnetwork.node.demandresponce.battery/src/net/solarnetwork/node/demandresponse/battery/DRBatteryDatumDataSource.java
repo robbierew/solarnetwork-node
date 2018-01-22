@@ -116,7 +116,7 @@ public class DRBatteryDatumDataSource extends DatumDataSourceSupport
 		List<SettingSpecifier> results = super.getIdentifiableSettingSpecifiers();
 		DRBatteryDatumDataSource defaults = new DRBatteryDatumDataSource();
 		results.add(new BasicTextFieldSettingSpecifier("batteryMaxCharge", defaults.maxCharge.toString()));
-		results.add(new BasicTextFieldSettingSpecifier("batteryMaxDraw", defaults.maxDraw.toString()));
+		results.add(new BasicTextFieldSettingSpecifier("maxDraw", defaults.maxDraw.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCharge", defaults.charge.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCost", defaults.cost.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCycles", defaults.cycles.toString()));

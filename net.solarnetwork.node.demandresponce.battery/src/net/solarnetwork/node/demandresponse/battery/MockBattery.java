@@ -47,7 +47,7 @@ public class MockBattery {
 	public void setCharge(double charge) {
 		this.lastsample = readTime();
 		// can't have negative charge,if that happens we keep the current value
-		if (charge >= 0) {
+		if (charge >= 0.0) {
 			this.charge = Math.min(charge, this.maxcapacity);
 
 		}
@@ -76,7 +76,7 @@ public class MockBattery {
 		}
 		double delta = deltaTimeHours();
 		double newcharge = this.charge - this.draw * delta;
-		if (newcharge < 0) {
+		if (newcharge < 0.0) {
 			newcharge = 0;
 		}
 		if (newcharge > this.maxcapacity) {
@@ -131,9 +131,6 @@ public class MockBattery {
 		this.draw = draw;
 	}
 
-	// TODO see why this method was made public and see if we can make it
-	// private
-	// I beleive it was made public so it can be extended for testing purposes
 	public long readTime() {
 		return System.currentTimeMillis();
 	}
