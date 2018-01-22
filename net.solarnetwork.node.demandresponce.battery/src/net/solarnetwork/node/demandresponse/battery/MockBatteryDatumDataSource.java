@@ -23,15 +23,6 @@ public class MockBatteryDatumDataSource extends DatumDataSourceSupport
 	private MockBattery mb = new MockBattery(10);
 	private OptionalServiceCollection<DatumDataSource<? extends EnergyDatum>> powerDatums;
 
-	// initaliser block to have battery loaded with default values
-	// {
-	//
-	// setMaxcap(MAXCAP_DEFAULT);
-	// setPowerDraw(POWERDRAW_DEFAULT);
-	// setCharge(CHARGE_DEFAULT);
-	//
-	// }
-
 	@Override
 	public String getSettingUID() {
 		return "net.solarnetwork.node.datum.battery.mock";

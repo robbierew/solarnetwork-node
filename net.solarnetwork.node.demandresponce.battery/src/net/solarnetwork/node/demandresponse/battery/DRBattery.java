@@ -72,24 +72,26 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 			return status;
 
 		}
-		// TODO maxdraw has not been checked for
+
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SHED_LOAD)) {
 			String param = instruction.getParameterValue(settings.getDrEngineName());
 			if (param != null) {
 				try {
 					double value = Double.parseDouble(param);
-					// TODO how will this instruction be used becasue remember
-					// readDraw is negative sometimes
-					double draw = battery.readDraw() - value;
-					// TODO why is this here
-					if (draw >= 0) {
 
-						battery.setCharge(draw);
-						state = InstructionState.Completed;
+					double draw = battery.readDraw();
+
+					// negative draw for a mockbattery means we are charging
+					if (draw < 0) {
+						// to shed out load we need to add
+						draw = draw + value;
 					} else {
-						// decline because of invalid draw value
-						state = InstructionState.Declined;
+						draw = draw - value;
 					}
+
+					battery.setCharge(draw);
+					state = InstructionState.Completed;
+
 				} catch (NumberFormatException e) {
 					state = InstructionState.Declined;
 				}
@@ -101,12 +103,10 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 			state = InstructionState.Declined;
 		}
 
-		// TODO this does not follow my current conventions for charging
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
 
 			if (instruction.getParameterValue(settings.getDrEngineName()) != null) {
-				// TODO update DRSupportTools to take better advantage of this
-				// stuff
+
 				String param = instruction.getParameterValue(DRSupportTools.WATTS_PARAM);
 				String param2 = instruction.getParameterValue(DRSupportTools.DISCHARGING_PARAM);
 
@@ -115,7 +115,6 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 						// TODO remove debug statement
 						System.out.println("value is " + param);
 
-						// TODO need to decide of datatype conventions
 						double value = Double.parseDouble(param);
 						boolean discharge = Boolean.parseBoolean(param2);
 

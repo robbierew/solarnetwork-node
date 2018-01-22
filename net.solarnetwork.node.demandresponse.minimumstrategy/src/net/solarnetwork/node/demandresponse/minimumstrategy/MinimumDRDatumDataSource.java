@@ -54,6 +54,8 @@ public class MinimumDRDatumDataSource extends DatumDataSourceSupport
 		try {
 			getLinkedInstance().drupdate();
 		} catch (RuntimeException e) {
+			// exceptions don't print inside this method. For debugging purposes
+			// I print the stacktrace if there is an exception
 			e.printStackTrace();
 		}
 

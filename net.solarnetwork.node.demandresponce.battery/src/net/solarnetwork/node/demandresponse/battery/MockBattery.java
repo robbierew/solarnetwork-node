@@ -16,8 +16,6 @@ public class MockBattery {
 	}
 
 	public MockBattery() {
-
-		// TODO change how this works
 		this(10.0);
 	}
 
