@@ -20,12 +20,6 @@ import net.solarnetwork.node.reactor.support.BasicInstruction;
  * implementation.
  * 
  * 
- * I want the strategy part to be changeable, I will look into being able to
- * select from a list of strategies and have their parameters dynamicly pop up
- * onto the settings page. I have seen something similar done with
- * demandbalancer
- * 
- * 
  * @author robert
  *
  */
@@ -44,13 +38,8 @@ public class DRAnouncer {
 	public void setSettings(DRAnouncerDatumDataSource settings) {
 		this.settings = settings;
 
-		// TODO
-		// I don't like this coupling factor this somehow
-		// potentaly look into getting drupdate called from a cron expression
-		// rather than when a setting changes
 	}
 
-	// TODO give this method a massive refactoring
 	protected void drupdate() {
 
 		List<FeedbackInstructionHandler> drdevices = new ArrayList<FeedbackInstructionHandler>();
@@ -61,7 +50,6 @@ public class DRAnouncer {
 
 		for (FeedbackInstructionHandler handler : feedbackInstructionHandlers) {
 
-			// TODO change the instruction from a string to a static referance
 			if (handler.handlesTopic(DRSupportTools.DRPARAMS_INSTRUCTION)) {
 
 				BasicInstruction instr = new BasicInstruction(DRSupportTools.DRPARAMS_INSTRUCTION, new Date(),
@@ -74,7 +62,7 @@ public class DRAnouncer {
 				Map<String, ?> test = handler.processInstructionWithFeedback(instr).getResultParameters();
 				if (test != null) {
 					test = handler.processInstructionWithFeedback(instr).getResultParameters();
-					if (DRSupportTools.isDRCapable(test)) {
+					if (DRSupportTools.isDRCapable(test) && !DRSupportTools.isChargeable(test)) {
 
 						drdevices.add(handler);
 						instructionMap.put(handler, test);
@@ -99,44 +87,11 @@ public class DRAnouncer {
 
 			Integer wattValue = DRSupportTools.readWatts(params);
 
-			if (DRSupportTools.isChargeable(params) && DRSupportTools.isDischarging(params)) {
-				energyProduction += wattValue;
-			} else {
-				energyConsumption += wattValue;
-			}
+			energyConsumption += wattValue;
 		}
-
-		// TODO check non negative (a case when this can happen is when batterys
-		// discharge more than demand)
-		// calculating the price of energy as a affine combination of the grid.
-		// eg if 50% energy from grid at $2 and 50% from battery at $1 energy is
-		// priced at $1.50
-		// cost and battery costs
 
 		Integer gridEnergy = energyConsumption - energyProduction;
 		Double newPrice = settings.getEnergyCost() * (double) gridEnergy / energyConsumption;
-
-		// TODO check if there is an more nicer way to do this
-		// when energyConusmption is 0
-		if (newPrice.isNaN()) {
-			newPrice = 1.0;
-		}
-
-		for (FeedbackInstructionHandler d : drdevices) {
-			Map<String, ?> params = instructionMap.get(d);
-
-			if (DRSupportTools.isChargeable(params)) {
-
-				Integer wattValue = DRSupportTools.readWatts(params);
-				Integer costValue = DRSupportTools.readEnergyCost(params);
-
-				if (DRSupportTools.isDischarging(params)) {
-					// TODO somehow update this price when battery changes
-					newPrice += costValue * wattValue / energyConsumption;
-				}
-
-			}
-		}
 
 		// need an object array cause I want to relate double with drdevice
 		// the reason im not using mapping is multiple drdevices could have the
@@ -174,14 +129,6 @@ public class DRAnouncer {
 
 		});
 
-		// I don't think we need this variable, my plan for this was if a
-		// battery starts discharging it could offset the grid making the price
-		// change
-		Double updatedCost = totalCost;
-
-		// TODO refactor this so much
-		Boolean shouldDischarge = null;
-
 		// if this is true we need to reduce demand to get costs down
 		if (totalCost > settings.getDrtargetCost()) {
 
@@ -197,33 +144,6 @@ public class DRAnouncer {
 
 				// check if we can reduce consumption
 				if (wattValue > minValue) {
-
-					// check if we are discharging battery
-					if (DRSupportTools.isChargeable(params)) {
-
-						// if (settings.getEnergyCost() > dr.getEnergyCost()) {
-						// if (dr.isDischarging()) {
-						//
-						// // reducing the battery would cause more energy
-						// // from
-						// // the grid
-						// // if grid energy costs more keep the battery
-						// // going
-						//
-						// continue;
-						//
-						// } else {
-						// if (dr.getCharge() > 0) {
-						// // Problem im having here is that the code
-						// // below is for shreding
-						// // but I need to increase just for discharge
-						// }
-						// }
-						// }
-
-						// TODO add logic here to decide to discharge
-
-					}
 
 					// if we are here we need to reduce
 					Double reduceAmount = totalCost - settings.getDrtargetCost();
@@ -270,18 +190,6 @@ public class DRAnouncer {
 
 				if (wattValue < maxValue) {
 
-					// TODO decide on what to do for battery
-					// if ("true".equals(params.get("chargeable"))) {
-					//
-					// if ("true".equals(params.get("isDischarging"))) {
-					//
-					// // TODO somehow decide whether to turn off battery,
-					// // charge battery or discharge more
-					// } else {
-					// shouldDischarge = false;
-					// }
-					// }
-
 					// if we are here it is okay to increase usage
 					Double increaseAmount = settings.getDrtargetCost() - totalCost;
 
@@ -296,7 +204,7 @@ public class DRAnouncer {
 					Double appliedenergyIncrease = Math.min(energyIncrease, maxValue);
 					Double energydelta = appliedenergyIncrease - wattValue;
 
-					setWattageInstruction(d, appliedenergyIncrease, shouldDischarge);
+					setWattageInstruction(d, appliedenergyIncrease);
 
 					// we were able to increase to match demand no need for more
 					// devices to have DR
@@ -316,14 +224,13 @@ public class DRAnouncer {
 
 	// Instruction to set the wattage parameter on the device it uses the
 	// TOPIC_SET_CONTROL_PARAMETER insrtuction
-	private void setWattageInstruction(InstructionHandler handler, Double energyLevel, Boolean shouldDischarge) {
+	private void setWattageInstruction(InstructionHandler handler, Double energyLevel) {
 		BasicInstruction instr = new BasicInstruction(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER, new Date(),
 				Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
 		instr.addParameter("watts", energyLevel.toString());
 
-		if (shouldDischarge != null) {
-			instr.addParameter("discharge", shouldDischarge.toString());
-		}
+		// add as a param the source ID so devices can verify
+		instr.addParameter(settings.getUID(), "");
 
 		handler.processInstruction(instr);
 	}

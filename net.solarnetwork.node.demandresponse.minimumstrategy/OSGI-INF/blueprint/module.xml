@@ -139,6 +139,7 @@
 										<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
 									</bean>
 									</property>
+									<property name="messageSource" ref="messageSource"/>
 								</bean>
 							</entry>
 							

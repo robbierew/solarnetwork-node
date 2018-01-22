@@ -13,14 +13,12 @@ public class DRAnouncerDatumDataSource extends DatumDataSourceSupport
 		implements SettingSpecifierProvider, DatumDataSource<GeneralNodeEnergyStorageDatum> {
 	private Integer energyCost = 10;
 
-	// TODO refactor how linkinstance works
-
 	// we will use this value as a means to calebrate the DR a lower value means
 	// more likly to turn things off. The goal is to get the cost of powering
 	// devices as close to this value without going over.
 	private Integer drtargetCost = 10;
 
-	private DRAnouncer linkedInstance;
+	private DRAnouncer drengine;
 
 	@Override
 	public String getSettingUID() {
@@ -66,11 +64,11 @@ public class DRAnouncerDatumDataSource extends DatumDataSourceSupport
 	}
 
 	public DRAnouncer getDRInstance() {
-		return linkedInstance;
+		return drengine;
 	}
 
 	public void setDRInstance(DRAnouncer linkedInstance) {
-		this.linkedInstance = linkedInstance;
+		this.drengine = linkedInstance;
 		linkedInstance.setSettings(this);
 	}
 
@@ -82,7 +80,7 @@ public class DRAnouncerDatumDataSource extends DatumDataSourceSupport
 	@Override
 	public GeneralNodeEnergyStorageDatum readCurrentDatum() {
 		try {
-			linkedInstance.drupdate();
+			drengine.drupdate();
 		} catch (RuntimeException e) {
 			// the try catch is only for debugging I have noticed that
 			e.printStackTrace();
@@ -90,7 +88,7 @@ public class DRAnouncerDatumDataSource extends DatumDataSourceSupport
 
 		// the datum will contain num devices as well as watts cost?
 		GeneralNodeEnergyStorageDatum datum = new GeneralNodeEnergyStorageDatum();
-		datum.putInstantaneousSampleValue("Num Devices", linkedInstance.getNumdrdevices());
+		datum.putInstantaneousSampleValue("Num Devices", drengine.getNumdrdevices());
 		datum.setSourceId(getUID());
 		return datum;
 	}

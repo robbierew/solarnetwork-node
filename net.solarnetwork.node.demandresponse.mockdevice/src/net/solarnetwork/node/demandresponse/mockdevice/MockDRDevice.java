@@ -27,6 +27,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import net.solarnetwork.node.DatumDataSource;
+import net.solarnetwork.node.demandresponse.mockannouncer.DRSupportTools;
 import net.solarnetwork.node.job.SimpleManagedTriggerAndJobDetail;
 import net.solarnetwork.node.reactor.FeedbackInstructionHandler;
 import net.solarnetwork.node.reactor.Instruction;
@@ -51,15 +52,16 @@ import net.solarnetwork.node.settings.SettingSpecifierProvider;
  */
 public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements FeedbackInstructionHandler {
 
-	private MockDRDeviceSettings settings;
-
-	// refactoring notes for myself due to the way OSGI is I need to break up
-	// this class into smaller classes and then configure them in OSGI
-
 	@Override
 	public boolean handlesTopic(String topic) {
-		// TODO have it actualy check
-		return true;
+		if (topic.equals(InstructionHandler.TOPIC_SHED_LOAD)) {
+			return true;
+		} else if (topic.equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
+			return true;
+		} else if (topic.equals(DRSupportTools.DRPARAMS_INSTRUCTION)) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -78,7 +80,7 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 		InstructionState state;
 		MockDRDeviceDatumDataSource settings = getSettings();
 
-		if (instruction.getTopic().equals("getDRDeviceInstance")) {
+		if (instruction.getTopic().equals(DRSupportTools.DRPARAMS_INSTRUCTION)) {
 			Map<String, Object> map = new Hashtable<String, Object>();
 
 			// check that this instruction came from the accepted source
@@ -90,11 +92,11 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 				state = InstructionState.Completed;
 
 				// put values in the parameter map
-				map.put("drcapable", "true");
-				map.put("watts", settings.getWatts().toString());
-				map.put("energycost", settings.getEnergycost().toString());
-				map.put("minwatts", settings.getMinwatts().toString());
-				map.put("maxwatts", settings.getMaxwatts().toString());
+				map.put(DRSupportTools.DRCAPABLE_PARAM, "true");
+				map.put(DRSupportTools.WATTS_PARAM, settings.getWatts().toString());
+				map.put(DRSupportTools.ENERGYCOST_PARAM, settings.getEnergycost().toString());
+				map.put(DRSupportTools.MINWATTS_PARAM, settings.getMinwatts().toString());
+				map.put(DRSupportTools.MAXWATTS_PARAM, settings.getMaxwatts().toString());
 			}
 
 			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);
@@ -120,7 +122,15 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 
 					// TODO shed load should only be able to reduce to minwatts
 					// BUG
-					settings.setWatts(((int) value > settings.getWatts()) ? 0 : settings.getWatts() - (int) value);
+					value = settings.getWatts() - value;
+					if (value < settings.getMinwatts()) {
+						settings.setWatts(settings.getMinwatts());
+					} else if (value > settings.getMaxwatts()) {
+						settings.setWatts(settings.getMaxwatts());
+					} else {
+						settings.setWatts((int) value);
+					}
+
 					state = InstructionState.Completed;
 				} catch (NumberFormatException e) {
 
@@ -137,17 +147,14 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 			}
 
 			// this instruction sets the wattage to a specific value rather than
-			// substracting it like shed load
+			// subtracting it like shed load
 			// it is mainly used for increasing the wattage reading however it
 			// can be used to reduce
 		} else if (instruction.getTopic().equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
 
-			// TODO add verification somehow the reason the I get watts is
-			// because this instruction could technicly be used for other
-			// parameters by other class. I did not make this instruction and I
-			// dont fully know the conventions when using it.
 			String param = instruction.getParameterValue("watts");
-			if (param != null) {
+			// be sure the instruction came from the accepted DR Engine
+			if (instruction.getParameterValue(settings.getDrsource()) != null && param != null) {
 				try {
 					double value = Double.parseDouble(param);
 					if (value < 0) {
@@ -176,12 +183,7 @@ public class MockDRDevice extends SimpleManagedTriggerAndJobDetail implements Fe
 		return status;
 	}
 
-	public void setSettings(MockDRDeviceSettings settings) {
-		this.settings = settings;
-	}
-
 	public MockDRDeviceDatumDataSource getSettings() {
-		// this seems wrong
 
 		return (MockDRDeviceDatumDataSource) getSettingSpecifierProvider();
 	}
