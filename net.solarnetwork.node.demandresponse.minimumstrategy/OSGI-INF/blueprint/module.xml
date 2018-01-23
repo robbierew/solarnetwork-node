@@ -13,7 +13,8 @@
 		http://www.springframework.org/schema/context
 		http://www.springframework.org/schema/context/spring-context-4.2.xsd">
 
-	<reference-list id="feedbackInstructionHandlers" availability="optional"
+	<reference-list id="feedbackInstructionHandlers"
+		availability="optional"
 		interface="net.solarnetwork.node.reactor.FeedbackInstructionHandler" />
 
 	<!-- provides access to local database storage for our datum -->
@@ -43,17 +44,11 @@
 	</bean>
 
 
-<!--
-	<bean id="MinDRSettings"
-		class="net.solarnetwork.node.demandresponse.dresimplestrategy.MinimumDRAnouncerSettings">
-		<property name="messageSource" ref="messageSource" />
-	</bean>
-
-	<bean id="MinDRAnouncer" class="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategy">
-		<property name="settings" ref="MinDRSettings" />
-		<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
-	</bean>
-  -->
+	<!-- <bean id="MinDRSettings" class="net.solarnetwork.node.demandresponse.dresimplestrategy.MinimumDRAnouncerSettings"> 
+		<property name="messageSource" ref="messageSource" /> </bean> <bean id="MinDRAnouncer" 
+		class="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategy"> 
+		<property name="settings" ref="MinDRSettings" /> <property name="feedbackInstructionHandlers" 
+		ref="feedbackInstructionHandlers" /> </bean> -->
 
 	<!-- publish a "component factory" so our Foobar Inverter appears in the 
 		settings GUI -->
@@ -111,8 +106,7 @@
 							</property>
 							<property name="properties">
 								<map>
-									<entry key="datumClassName"
-										value="net.solarnetwork.node.domain.EnergyDatum" />
+									<entry key="datumClassName" value="net.solarnetwork.node.domain.EnergyDatum" />
 								</map>
 							</property>
 						</bean>
@@ -133,16 +127,18 @@
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategyDatumDataSource">
-									<property name="linkedInstance" >
-									<bean class = "net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategy">
-										<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
-									</bean>
+								<bean
+									class="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategyDatumDataSource">
+									<property name="linkedInstance">
+										<bean
+											class="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategy">
+											<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
+										</bean>
 									</property>
-									<property name="messageSource" ref="messageSource"/>
+									<property name="messageSource" ref="messageSource" />
 								</bean>
 							</entry>
-							
+
 
 
 						</map>

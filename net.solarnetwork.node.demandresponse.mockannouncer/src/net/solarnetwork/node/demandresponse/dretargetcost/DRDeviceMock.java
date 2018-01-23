@@ -148,15 +148,4 @@ public class DRDeviceMock implements FeedbackInstructionHandler {
 		this.minPower = minPower;
 	}
 
-	@Deprecated
-	public Integer getWatts() {
-
-		return watts;
-	}
-
-	@Deprecated
-	public void setWatts(Integer watts) {
-		this.watts = watts;
-	}
-
 }

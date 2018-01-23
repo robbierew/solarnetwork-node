@@ -13,7 +13,8 @@
 		http://www.springframework.org/schema/context
 		http://www.springframework.org/schema/context/spring-context-4.2.xsd">
 
-	<reference-list id="feedbackInstructionHandlers" availability="optional"
+	<reference-list id="feedbackInstructionHandlers"
+		availability="optional"
 		interface="net.solarnetwork.node.reactor.FeedbackInstructionHandler" />
 
 	<!-- provides access to local database storage for our datum -->
@@ -43,31 +44,15 @@
 	</bean>
 
 
-<!-- 
-	<bean id="DRAnouncerSettings"
-		class="net.solarnetwork.node.demandresponse.dretargetcost.DRAnouncerSettings">
-		<property name="messageSource" ref="messageSource" />
-		<property name="poweredDevices">
-			<bean class="net.solarnetwork.util.DynamicServiceTracker">
-				<property name="bundleContext" ref="bundleContext" />
-				<property name="serviceClassName" value="net.solarnetwork.node.DatumDataSource" />
-				<property name="propertyFilters">
-					<map>
-						<entry key="UID" value="Main" />
-					</map>
-				</property>
+	<!-- <bean id="DRAnouncerSettings" class="net.solarnetwork.node.demandresponse.dretargetcost.DRAnouncerSettings"> 
+		<property name="messageSource" ref="messageSource" /> <property name="poweredDevices"> 
+		<bean class="net.solarnetwork.util.DynamicServiceTracker"> <property name="bundleContext" 
+		ref="bundleContext" /> <property name="serviceClassName" value="net.solarnetwork.node.DatumDataSource" 
+		/> <property name="propertyFilters"> <map> <entry key="UID" value="Main" 
+		/> </map> </property> </bean> </property> </bean> <bean id="DRAnouncer" class="net.solarnetwork.node.demandresponse.dretargetcost.DRAnouncer"> 
+		<property name="settings" ref="DRAnouncerSettings" /> <property name="feedbackInstructionHandlers" 
+		ref="feedbackInstructionHandlers" /> </bean> -->
 
-			</bean>
-		</property>
-	</bean>
-
-	<bean id="DRAnouncer" class="net.solarnetwork.node.demandresponse.dretargetcost.DRAnouncer">
-		<property name="settings" ref="DRAnouncerSettings" />
-		<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
-	</bean>
-
- -->
- 
 	<!-- publish a "component factory" so our Foobar Inverter appears in the 
 		settings GUI -->
 	<service
@@ -124,8 +109,7 @@
 							</property>
 							<property name="properties">
 								<map>
-									<entry key="datumClassName"
-										value="net.solarnetwork.node.domain.EnergyDatum" />
+									<entry key="datumClassName" value="net.solarnetwork.node.domain.EnergyDatum" />
 								</map>
 							</property>
 						</bean>
@@ -146,18 +130,20 @@
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.demandresponse.dretargetcost.DRETargetCostDatumDataSource">
+								<bean
+									class="net.solarnetwork.node.demandresponse.dretargetcost.DRETargetCostDatumDataSource">
 									<property name="DRInstance">
-									<bean class="net.solarnetwork.node.demandresponse.dretargetcost.DRETargetCost">
-										<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
-									</bean>
-									
+										<bean
+											class="net.solarnetwork.node.demandresponse.dretargetcost.DRETargetCost">
+											<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
+										</bean>
+
 									</property>
-									<property name="messageSource" ref="messageSource"/>
-									
+									<property name="messageSource" ref="messageSource" />
+
 								</bean>
 							</entry>
-							
+
 
 
 						</map>

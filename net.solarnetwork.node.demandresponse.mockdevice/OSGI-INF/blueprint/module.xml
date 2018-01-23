@@ -44,7 +44,7 @@
 
 
 
-	
+
 
 	<!-- publish a "component factory" so our Foobar Inverter appears in the 
 		settings GUI -->
@@ -75,7 +75,8 @@
 			<beans:entry key="settingPid"
 				value="net.solarnetwork.node.demandresponse.mockdrconsumer" />
 		</osgix:service-properties>
-		<bean class="net.solarnetwork.node.demandresponse.mockdrconsumer.MockDRConsumer">
+		<bean
+			class="net.solarnetwork.node.demandresponse.mockdrconsumer.MockDRConsumer">
 
 			<!-- the trigger defines when the periodic job runs; in this case we define 
 				a cron style trigger, that by default runs once/minute -->
@@ -125,21 +126,22 @@
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.demandresponse.mockdrconsumer.MockDRConsumerDatumDataSource">
+								<bean
+									class="net.solarnetwork.node.demandresponse.mockdrconsumer.MockDRConsumerDatumDataSource">
 									<property name="messageSource" ref="messageSource" />
 								</bean>
 							</entry>
 							<!-- I don't know what this is for -->
-							<!--  <entry key="settings" value-ref="MockDRSettings"/> -->
-							
+							<!-- <entry key="settings" value-ref="MockDRSettings"/> -->
+
 
 
 						</map>
 					</property>
 				</bean>
 			</property>
-			<!-- <property name="settings" ref="MockDRSettings" />  -->
-			<!--  <property name="instructionHandlers" ref="instructionHandlers" />-->
+			<!-- <property name="settings" ref="MockDRSettings" /> -->
+			<!-- <property name="instructionHandlers" ref="instructionHandlers" /> -->
 		</bean>
 	</osgix:managed-service-factory>
 

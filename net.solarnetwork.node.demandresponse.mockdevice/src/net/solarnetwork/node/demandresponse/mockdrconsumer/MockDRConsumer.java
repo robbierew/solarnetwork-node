@@ -94,7 +94,7 @@ public class MockDRConsumer extends SimpleManagedTriggerAndJobDetail implements 
 				// put values in the parameter map
 				map.put(DRSupportTools.DRCAPABLE_PARAM, "true");
 				map.put(DRSupportTools.WATTS_PARAM, settings.getWatts().toString());
-				map.put(DRSupportTools.ENERGYCOST_PARAM, settings.getEnergycost().toString());
+				map.put(DRSupportTools.ENERGY_DEPRECIATION, settings.getEnergycost().toString());
 				map.put(DRSupportTools.MINWATTS_PARAM, settings.getMinwatts().toString());
 				map.put(DRSupportTools.MAXWATTS_PARAM, settings.getMaxwatts().toString());
 			}

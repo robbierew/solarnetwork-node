@@ -61,7 +61,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 			// cycles. The price of using energy is related to the cost of the
 			// battery and the number of cycles it can do and the maximum
 			// capacity of a charge.
-			map.put(DRSupportTools.ENERGYCOST_PARAM,
+			map.put(DRSupportTools.ENERGY_DEPRECIATION,
 					new Integer((int) (settings.getBatteryCost().doubleValue()
 							/ (settings.getBatteryCycles().doubleValue() * settings.getBatteryMaxCharge() * 2.0)))
 									.toString());

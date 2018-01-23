@@ -44,32 +44,17 @@
 
 
 
-<!--  	<bean id="DRBatterySettings"
-		class="net.solarnetwork.node.demandresponse.mockbattery.DRBatterySettings">
-		<property name="MockBattery">
-			<bean class="net.solarnetwork.node.demandresponse.mockbattery.MockBattery" />
-		</property>
-		<property name="messageSource" ref="messageSource" />
-		<property name="poweredDevices">
-			<bean class="net.solarnetwork.util.DynamicServiceTracker">
-				<property name="bundleContext" ref="bundleContext" />
-				<property name="serviceClassName" value="net.solarnetwork.node.DatumDataSource" />
-				<property name="propertyFilters">
-					<map>
-						<entry key="UID" value="Main" />
-					</map>
-				</property>
-
-			</bean>
-		</property>
-	</bean>
--->
-<!-- 
-	<bean id="DRBattery" class="net.solarnetwork.node.demandresponse.mockbattery.DRBattery">
-		<property name="DRBatterySettings" ref="DRBatterySettings" />
-		<property name="instructionHandlers" ref="instructionHandlers" />
-	</bean>
- -->
+	<!-- <bean id="DRBatterySettings" class="net.solarnetwork.node.demandresponse.mockbattery.DRBatterySettings"> 
+		<property name="MockBattery"> <bean class="net.solarnetwork.node.demandresponse.mockbattery.MockBattery" 
+		/> </property> <property name="messageSource" ref="messageSource" /> <property 
+		name="poweredDevices"> <bean class="net.solarnetwork.util.DynamicServiceTracker"> 
+		<property name="bundleContext" ref="bundleContext" /> <property name="serviceClassName" 
+		value="net.solarnetwork.node.DatumDataSource" /> <property name="propertyFilters"> 
+		<map> <entry key="UID" value="Main" /> </map> </property> </bean> </property> 
+		</bean> -->
+	<!-- <bean id="DRBattery" class="net.solarnetwork.node.demandresponse.mockbattery.DRBattery"> 
+		<property name="DRBatterySettings" ref="DRBatterySettings" /> <property name="instructionHandlers" 
+		ref="instructionHandlers" /> </bean> -->
 	<!-- publish a "component factory" so our Foobar Inverter appears in the 
 		settings GUI -->
 	<service
@@ -149,22 +134,24 @@
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.demandresponse.mockbattery.DRBatteryDatumDataSource">
+								<bean
+									class="net.solarnetwork.node.demandresponse.mockbattery.DRBatteryDatumDataSource">
 									<property name="MockBattery">
-										<bean class="net.solarnetwork.node.demandresponse.mockbattery.MockBattery" />
-										</property>
+										<bean
+											class="net.solarnetwork.node.demandresponse.mockbattery.MockBattery" />
+									</property>
 									<property name="messageSource" ref="messageSource" />
 								</bean>
 							</entry>
-							
-							
+
+
 
 
 						</map>
 					</property>
 				</bean>
 			</property>
-			
+
 			<property name="instructionHandlers" ref="instructionHandlers" />
 		</bean>
 	</osgix:managed-service-factory>
