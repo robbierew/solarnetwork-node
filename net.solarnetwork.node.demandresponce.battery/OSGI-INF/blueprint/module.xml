@@ -28,7 +28,7 @@
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basenames"
-			value="net.solarnetwork.node.demandresponse.battery.DRBatteryDatumDataSource" />
+			value="net.solarnetwork.node.demandresponse.mockbattery.DRBatteryDatumDataSource" />
 	</bean>
 
 	<!-- support localized strings for the periodic job settings in the GUI -->
@@ -45,9 +45,9 @@
 
 
 <!--  	<bean id="DRBatterySettings"
-		class="net.solarnetwork.node.demandresponse.battery.DRBatterySettings">
+		class="net.solarnetwork.node.demandresponse.mockbattery.DRBatterySettings">
 		<property name="MockBattery">
-			<bean class="net.solarnetwork.node.demandresponse.battery.MockBattery" />
+			<bean class="net.solarnetwork.node.demandresponse.mockbattery.MockBattery" />
 		</property>
 		<property name="messageSource" ref="messageSource" />
 		<property name="poweredDevices">
@@ -65,7 +65,7 @@
 	</bean>
 -->
 <!-- 
-	<bean id="DRBattery" class="net.solarnetwork.node.demandresponse.battery.DRBattery">
+	<bean id="DRBattery" class="net.solarnetwork.node.demandresponse.mockbattery.DRBattery">
 		<property name="DRBatterySettings" ref="DRBatterySettings" />
 		<property name="instructionHandlers" ref="instructionHandlers" />
 	</bean>
@@ -78,7 +78,7 @@
 			class="net.solarnetwork.node.settings.support.BasicSettingSpecifierProviderFactory">
 			<property name="displayName" value="DR Battery" />
 			<property name="factoryUID"
-				value="net.solarnetwork.node.demandresponse.battery" />
+				value="net.solarnetwork.node.demandresponse.mockbattery" />
 			<property name="messageSource" ref="messageSource" />
 		</bean>
 	</service>
@@ -87,7 +87,7 @@
 		can be configured in the GUI, along with a periodic job to collect datum 
 		from it -->
 	<osgix:managed-service-factory
-		factory-pid="net.solarnetwork.node.demandresponse.battery"
+		factory-pid="net.solarnetwork.node.demandresponse.mockbattery"
 		autowire-on-update="true">
 		<osgix:interfaces>
 			<beans:value>net.solarnetwork.node.job.ManagedTriggerAndJobDetail</beans:value>
@@ -97,9 +97,9 @@
 		</osgix:interfaces>
 		<osgix:service-properties>
 			<beans:entry key="settingPid"
-				value="net.solarnetwork.node.demandresponse.battery" />
+				value="net.solarnetwork.node.demandresponse.mockbattery" />
 		</osgix:service-properties>
-		<bean class="net.solarnetwork.node.demandresponse.battery.DRBattery">
+		<bean class="net.solarnetwork.node.demandresponse.mockbattery.DRBattery">
 
 			<!-- the trigger defines when the periodic job runs; in this case we define 
 				a cron style trigger, that by default runs once/minute -->
@@ -149,9 +149,9 @@
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.demandresponse.battery.DRBatteryDatumDataSource">
+								<bean class="net.solarnetwork.node.demandresponse.mockbattery.DRBatteryDatumDataSource">
 									<property name="MockBattery">
-										<bean class="net.solarnetwork.node.demandresponse.battery.MockBattery" />
+										<bean class="net.solarnetwork.node.demandresponse.mockbattery.MockBattery" />
 										</property>
 									<property name="messageSource" ref="messageSource" />
 								</bean>

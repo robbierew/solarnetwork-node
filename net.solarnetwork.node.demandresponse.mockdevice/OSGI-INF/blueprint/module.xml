@@ -28,7 +28,7 @@
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basenames"
-			value="net.solarnetwork.node.demandresponse.mockdevice.MockDRDeviceDatumDataSource" />
+			value="net.solarnetwork.node.demandresponse.mockdrconsumer.MockDRConsumerDatumDataSource" />
 	</bean>
 
 	<!-- support localized strings for the periodic job settings in the GUI -->
@@ -54,7 +54,7 @@
 			class="net.solarnetwork.node.settings.support.BasicSettingSpecifierProviderFactory">
 			<property name="displayName" value="Mock DR Device" />
 			<property name="factoryUID"
-				value="net.solarnetwork.node.demandresponse.mockdevice" />
+				value="net.solarnetwork.node.demandresponse.mockdrconsumer" />
 			<property name="messageSource" ref="messageSource" />
 		</bean>
 	</service>
@@ -63,7 +63,7 @@
 		can be configured in the GUI, along with a periodic job to collect datum 
 		from it -->
 	<osgix:managed-service-factory
-		factory-pid="net.solarnetwork.node.demandresponse.mockdevice"
+		factory-pid="net.solarnetwork.node.demandresponse.mockdrconsumer"
 		autowire-on-update="true">
 		<osgix:interfaces>
 			<beans:value>net.solarnetwork.node.job.ManagedTriggerAndJobDetail</beans:value>
@@ -73,9 +73,9 @@
 		</osgix:interfaces>
 		<osgix:service-properties>
 			<beans:entry key="settingPid"
-				value="net.solarnetwork.node.demandresponse.mockdevice" />
+				value="net.solarnetwork.node.demandresponse.mockdrconsumer" />
 		</osgix:service-properties>
-		<bean class="net.solarnetwork.node.demandresponse.mockdevice.MockDRDevice">
+		<bean class="net.solarnetwork.node.demandresponse.mockdrconsumer.MockDRConsumer">
 
 			<!-- the trigger defines when the periodic job runs; in this case we define 
 				a cron style trigger, that by default runs once/minute -->
@@ -125,7 +125,7 @@
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.demandresponse.mockdevice.MockDRDeviceDatumDataSource">
+								<bean class="net.solarnetwork.node.demandresponse.mockdrconsumer.MockDRConsumerDatumDataSource">
 									<property name="messageSource" ref="messageSource" />
 								</bean>
 							</entry>

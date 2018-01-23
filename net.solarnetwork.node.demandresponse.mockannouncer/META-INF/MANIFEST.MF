@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Mock Anouncer
-Bundle-SymbolicName: net.solarnetwork.node.demandresponse.mockannouncer
+Bundle-SymbolicName: net.solarnetwork.node.demandresponse.dretargetcost
 Bundle-Version: 1.0.0
 Bundle-Vendor: SolarNetwork
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
@@ -28,4 +28,4 @@ Import-Package: net.solarnetwork.node;version="1.23.0",
  org.springframework.context.support;version="[4.2.9.RELEASE,5.0.0)",
  org.springframework.core;version="[4.2.9.RELEASE,5.0.0)",
  org.springframework.scheduling.quartz;version="[4.2.9.RELEASE,5.0.0)"
-Export-Package: net.solarnetwork.node.demandresponse.mockannouncer
+Export-Package: net.solarnetwork.node.demandresponse.dretargetcost

@@ -28,7 +28,7 @@
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basenames"
-			value="net.solarnetwork.node.demandresponse.minimumstrategy.MinimumDRDatumDataSource" />
+			value="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategyDatumDataSource" />
 	</bean>
 
 	<!-- support localized strings for the periodic job settings in the GUI -->
@@ -45,11 +45,11 @@
 
 <!--
 	<bean id="MinDRSettings"
-		class="net.solarnetwork.node.demandresponse.minimumstrategy.MinimumDRAnouncerSettings">
+		class="net.solarnetwork.node.demandresponse.dresimplestrategy.MinimumDRAnouncerSettings">
 		<property name="messageSource" ref="messageSource" />
 	</bean>
 
-	<bean id="MinDRAnouncer" class="net.solarnetwork.node.demandresponse.minimumstrategy.MinimumDRStrategy">
+	<bean id="MinDRAnouncer" class="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategy">
 		<property name="settings" ref="MinDRSettings" />
 		<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
 	</bean>
@@ -63,7 +63,7 @@
 			class="net.solarnetwork.node.settings.support.BasicSettingSpecifierProviderFactory">
 			<property name="displayName" value="Min DR Engine" />
 			<property name="factoryUID"
-				value="net.solarnetwork.node.demandresponse.minimumstrategy" />
+				value="net.solarnetwork.node.demandresponse.dresimplestrategy" />
 			<property name="messageSource" ref="messageSource" />
 		</bean>
 	</service>
@@ -72,7 +72,7 @@
 		can be configured in the GUI, along with a periodic job to collect datum 
 		from it -->
 	<osgix:managed-service-factory
-		factory-pid="net.solarnetwork.node.demandresponse.minimumstrategy"
+		factory-pid="net.solarnetwork.node.demandresponse.dresimplestrategy"
 		autowire-on-update="true">
 		<osgix:interfaces>
 			<beans:value>net.solarnetwork.node.job.ManagedTriggerAndJobDetail</beans:value>
@@ -81,7 +81,7 @@
 		</osgix:interfaces>
 		<osgix:service-properties>
 			<beans:entry key="settingPid"
-				value="net.solarnetwork.node.demandresponse.minimumstrategy" />
+				value="net.solarnetwork.node.demandresponse.dresimplestrategy" />
 		</osgix:service-properties>
 		<bean class="net.solarnetwork.node.job.SimpleManagedTriggerAndJobDetail">
 
@@ -133,9 +133,9 @@
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.demandresponse.minimumstrategy.MinimumDRDatumDataSource">
+								<bean class="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategyDatumDataSource">
 									<property name="linkedInstance" >
-									<bean class = "net.solarnetwork.node.demandresponse.minimumstrategy.MinimumDRStrategy">
+									<bean class = "net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategy">
 										<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
 									</bean>
 									</property>

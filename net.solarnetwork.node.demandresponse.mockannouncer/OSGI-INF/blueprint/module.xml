@@ -28,7 +28,7 @@
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basenames"
-			value="net.solarnetwork.node.demandresponse.mockannouncer.DRAnouncerSettings" />
+			value="net.solarnetwork.node.demandresponse.dretargetcost.DRETargetCostDatumDataSource" />
 	</bean>
 
 	<!-- support localized strings for the periodic job settings in the GUI -->
@@ -45,7 +45,7 @@
 
 <!-- 
 	<bean id="DRAnouncerSettings"
-		class="net.solarnetwork.node.demandresponse.mockannouncer.DRAnouncerSettings">
+		class="net.solarnetwork.node.demandresponse.dretargetcost.DRAnouncerSettings">
 		<property name="messageSource" ref="messageSource" />
 		<property name="poweredDevices">
 			<bean class="net.solarnetwork.util.DynamicServiceTracker">
@@ -61,7 +61,7 @@
 		</property>
 	</bean>
 
-	<bean id="DRAnouncer" class="net.solarnetwork.node.demandresponse.mockannouncer.DRAnouncer">
+	<bean id="DRAnouncer" class="net.solarnetwork.node.demandresponse.dretargetcost.DRAnouncer">
 		<property name="settings" ref="DRAnouncerSettings" />
 		<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
 	</bean>
@@ -76,7 +76,7 @@
 			class="net.solarnetwork.node.settings.support.BasicSettingSpecifierProviderFactory">
 			<property name="displayName" value="DR Engine" />
 			<property name="factoryUID"
-				value="net.solarnetwork.node.demandresponse.mockannouncer" />
+				value="net.solarnetwork.node.demandresponse.dretargetcost" />
 			<property name="messageSource" ref="messageSource" />
 		</bean>
 	</service>
@@ -85,7 +85,7 @@
 		can be configured in the GUI, along with a periodic job to collect datum 
 		from it -->
 	<osgix:managed-service-factory
-		factory-pid="net.solarnetwork.node.demandresponse.mockannouncer"
+		factory-pid="net.solarnetwork.node.demandresponse.dretargetcost"
 		autowire-on-update="true">
 		<osgix:interfaces>
 			<beans:value>net.solarnetwork.node.job.ManagedTriggerAndJobDetail</beans:value>
@@ -94,7 +94,7 @@
 		</osgix:interfaces>
 		<osgix:service-properties>
 			<beans:entry key="settingPid"
-				value="net.solarnetwork.node.demandresponse.mockannouncer" />
+				value="net.solarnetwork.node.demandresponse.dretargetcost" />
 		</osgix:service-properties>
 		<bean class="net.solarnetwork.node.job.SimpleManagedTriggerAndJobDetail">
 
@@ -146,9 +146,9 @@
 						<map>
 							<entry key="datumDao" value-ref="generalNodeDatumDao" />
 							<entry key="datumDataSource">
-								<bean class="net.solarnetwork.node.demandresponse.mockannouncer.DRAnouncerDatumDataSource">
+								<bean class="net.solarnetwork.node.demandresponse.dretargetcost.DRETargetCostDatumDataSource">
 									<property name="DRInstance">
-									<bean class="net.solarnetwork.node.demandresponse.mockannouncer.DRAnouncer">
+									<bean class="net.solarnetwork.node.demandresponse.dretargetcost.DRETargetCost">
 										<property name="feedbackInstructionHandlers" ref="feedbackInstructionHandlers" />
 									</bean>
 									
