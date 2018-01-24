@@ -49,9 +49,9 @@ public class DRESimpleStrategy {
 	protected void drupdate() {
 		numdrdevices = 0;
 		for (FeedbackInstructionHandler handler : feedbackInstructionHandlers) {
-			if (handler.handlesTopic("getDRDeviceInstance")) {
+			if (handler.handlesTopic(DRSupportTools.DRPARAMS_INSTRUCTION)) {
 
-				BasicInstruction instr = new BasicInstruction("getDRDeviceInstance", new Date(),
+				BasicInstruction instr = new BasicInstruction(DRSupportTools.DRPARAMS_INSTRUCTION, new Date(),
 						Instruction.LOCAL_INSTRUCTION_ID, Instruction.LOCAL_INSTRUCTION_ID, null);
 
 				// The devices want to know where the instruction came from for
