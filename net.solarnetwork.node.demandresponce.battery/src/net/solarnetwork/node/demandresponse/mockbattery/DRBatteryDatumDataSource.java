@@ -64,37 +64,7 @@ public class DRBatteryDatumDataSource extends DatumDataSourceSupport
 
 	}
 
-	// /**
-	// * Looks at the datums from other plugins and reads their wattage reading.
-	// * This is the powerdraw the battery will have
-	// */
-	// @Deprecated
-	// private void calcBatteryDraw() {
-	//
-	// Double sum = 0.0;
-	// Iterable<DatumDataSource<? extends EnergyDatum>> datumIterable =
-	// settings.getPoweredDevices().services();
-	//
-	// for (DatumDataSource<? extends EnergyDatum> d : datumIterable) {
-	//
-	// EnergyDatum datum = d.readCurrentDatum();
-	//
-	// // not all readings have a datum or a wattage reading which is why
-	// // one must check for nulls
-	// if (datum != null) {
-	// Integer reading = datum.getWatts();
-	// if (reading != null) {
-	// sum += reading.doubleValue();
-	// }
-	// }
-	// }
-	//
-	// // update the batteries powerdraw
-	// settings.getMockBattery().setDraw(sum);
-	//
-	// }
-
-	public String getDrEngineName() {
+	public String getDREngineName() {
 		return drEngineName;
 	}
 

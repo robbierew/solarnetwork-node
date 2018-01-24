@@ -131,17 +131,11 @@
 									<property name="messageSource" ref="messageSource" />
 								</bean>
 							</entry>
-							<!-- I don't know what this is for -->
-							<!-- <entry key="settings" value-ref="MockDRSettings"/> -->
-
-
 
 						</map>
 					</property>
 				</bean>
 			</property>
-			<!-- <property name="settings" ref="MockDRSettings" /> -->
-			<!-- <property name="instructionHandlers" ref="instructionHandlers" /> -->
 		</bean>
 	</osgix:managed-service-factory>
 

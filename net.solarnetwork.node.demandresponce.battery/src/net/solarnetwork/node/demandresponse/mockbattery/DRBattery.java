@@ -1,6 +1,5 @@
 package net.solarnetwork.node.demandresponse.mockbattery;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
@@ -15,12 +14,18 @@ import net.solarnetwork.node.reactor.InstructionStatus.InstructionState;
 import net.solarnetwork.node.reactor.support.BasicInstructionStatus;
 
 /**
+ * Class to handle demand response instructions for a battery. This class
+ * follows the demand response rules described in the DRSupportTools class. This
+ * implementation is an example of a chargeable device, this means it can change
+ * from charging and discharging states. To be able to send demand response
+ * instructions to this device you need to include the name of the DR Engine as
+ * a parameter to each instruction. An in-depth explanation on how instruction
+ * parameters are formatted see DRSupportTools.
  * 
  * @author robert
  *
  */
 public class DRBattery extends SimpleManagedTriggerAndJobDetail implements FeedbackInstructionHandler {
-	private Collection<InstructionHandler> instructionHandlers;
 
 	@Override
 	public boolean handlesTopic(String topic) {
@@ -38,6 +43,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 
 	@Override
 	public InstructionState processInstruction(Instruction instruction) {
+		// use the with feedback method and remove the feedback
 		InstructionStatus status = processInstructionWithFeedback(instruction);
 		return status.getAcknowledgedInstructionState();
 
@@ -49,11 +55,15 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 		InstructionState state;
 		MockBattery battery = settings.getMockBattery();
 		if (instruction.getTopic().equals(DRSupportTools.DRPARAMS_INSTRUCTION)) {
-			// for now lets just get this working
-			state = InstructionState.Completed;
+
 			Map<String, Object> map = new Hashtable<String, Object>();
+
+			// this mock is always ready for demand response
 			map.put(DRSupportTools.DRREADY_PARAM, "true");
+
 			map.put(DRSupportTools.WATTS_PARAM, new Double(Math.abs(settings.getMockBattery().readDraw())).toString());
+
+			// This device is chargeable,
 			map.put(DRSupportTools.CHARGEABLE_PARAM, "true");
 			map.put(DRSupportTools.DISCHARGING_PARAM, new Boolean(settings.getMockBattery().readDraw() > 0).toString());
 
@@ -66,15 +76,27 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 							/ (settings.getBatteryCycles().doubleValue() * settings.getBatteryMaxCharge() * 2.0)))
 									.toString());
 
+			// This device is allowed to completly power down
 			map.put(DRSupportTools.MINWATTS_PARAM, "0");
+
 			map.put(DRSupportTools.MAXWATTS_PARAM, settings.getMaxDraw().toString());
+			map.put(DRSupportTools.SOURCEID_PARAM, settings.getUID());
+
+			// send the feedback of the instruction
+			state = InstructionState.Completed;
 			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);
+
 			return status;
 
 		}
 
+		// This instruction is a little strange in that you have to map the DR
+		// Engine name with the shed amount see DRSupportTools for better
+		// explanation.
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SHED_LOAD)) {
-			String param = instruction.getParameterValue(settings.getDrEngineName());
+			// the shed load value should be here
+			String param = instruction.getParameterValue(settings.getDREngineName());
+
 			if (param != null) {
 				try {
 					double value = Double.parseDouble(param);
@@ -89,10 +111,11 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 						draw = draw - value;
 					}
 
-					battery.setCharge(draw);
+					battery.setDraw(draw);
 					state = InstructionState.Completed;
 
 				} catch (NumberFormatException e) {
+					// Incorrectly formatted parameters should be declined
 					state = InstructionState.Declined;
 				}
 
@@ -104,22 +127,27 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 		}
 
 		if (instruction.getTopic().equals(InstructionHandler.TOPIC_SET_CONTROL_PARAMETER)) {
+			// verify the instruction came from the accepted DREngine
+			if (instruction.getParameterValue(settings.getDREngineName()) != null) {
 
-			if (instruction.getParameterValue(settings.getDrEngineName()) != null) {
-
+				// for a battery we need two parameters one is what the watt
+				// level needs to be set to the other is whether we are charging
+				// or discharging.
 				String param = instruction.getParameterValue(DRSupportTools.WATTS_PARAM);
 				String param2 = instruction.getParameterValue(DRSupportTools.DISCHARGING_PARAM);
 
+				// check we got both parameters
 				if (param != null && param2 != null) {
 					try {
-						// TODO remove debug statement
-						System.out.println("value is " + param);
 
 						double value = Double.parseDouble(param);
+
+						// the discharge parameter should be in form "true" or
+						// "false"
 						boolean discharge = Boolean.parseBoolean(param2);
 
 						if (value < 0) {
-							// negative value does not make sence decline rather
+							// negative value does not make sense decline rather
 							// than assume positive
 							state = InstructionState.Declined;
 
@@ -167,14 +195,6 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 		// Because of the way the OSGI is configured this is the best way I know
 		// to get access to the settings
 		return (DRBatteryDatumDataSource) getSettingSpecifierProvider();
-	}
-
-	public void setInstructionHandlers(Collection<InstructionHandler> instructionHandlers) {
-		this.instructionHandlers = instructionHandlers;
-	}
-
-	public Collection<InstructionHandler> getInstructionHandlers() {
-		return instructionHandlers;
 	}
 
 }

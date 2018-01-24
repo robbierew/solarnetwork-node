@@ -43,13 +43,6 @@
 		<property name="serviceClassName" value="org.osgi.service.event.EventAdmin" />
 	</bean>
 
-
-	<!-- <bean id="MinDRSettings" class="net.solarnetwork.node.demandresponse.dresimplestrategy.MinimumDRAnouncerSettings"> 
-		<property name="messageSource" ref="messageSource" /> </bean> <bean id="MinDRAnouncer" 
-		class="net.solarnetwork.node.demandresponse.dresimplestrategy.DRESimpleStrategy"> 
-		<property name="settings" ref="MinDRSettings" /> <property name="feedbackInstructionHandlers" 
-		ref="feedbackInstructionHandlers" /> </bean> -->
-
 	<!-- publish a "component factory" so our Foobar Inverter appears in the 
 		settings GUI -->
 	<service
