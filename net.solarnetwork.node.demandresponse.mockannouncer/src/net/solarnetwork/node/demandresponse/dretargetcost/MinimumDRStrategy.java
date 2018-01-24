@@ -16,10 +16,9 @@ import net.solarnetwork.node.reactor.support.BasicInstruction;
  * @author robert
  *
  */
-public class MinimumDRStrategy implements DRStrategy {
+public class MinimumDRStrategy {
 	private List<FeedbackInstructionHandler> handlers;
 
-	@Override
 	public void drupdate() {
 		for (FeedbackInstructionHandler handler : handlers) {
 			if (handler.handlesTopic("getDRDeviceInstance")) {
@@ -51,7 +50,6 @@ public class MinimumDRStrategy implements DRStrategy {
 		}
 	}
 
-	@Override
 	public void setHandlers(List<FeedbackInstructionHandler> handlers) {
 		this.handlers = handlers;
 

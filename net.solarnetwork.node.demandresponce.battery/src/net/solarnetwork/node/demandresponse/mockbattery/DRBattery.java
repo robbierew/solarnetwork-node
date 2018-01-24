@@ -52,7 +52,7 @@ public class DRBattery extends SimpleManagedTriggerAndJobDetail implements Feedb
 			// for now lets just get this working
 			state = InstructionState.Completed;
 			Map<String, Object> map = new Hashtable<String, Object>();
-			map.put(DRSupportTools.DRCAPABLE_PARAM, "true");
+			map.put(DRSupportTools.DRREADY_PARAM, "true");
 			map.put(DRSupportTools.WATTS_PARAM, new Double(Math.abs(settings.getMockBattery().readDraw())).toString());
 			map.put(DRSupportTools.CHARGEABLE_PARAM, "true");
 			map.put(DRSupportTools.DISCHARGING_PARAM, new Boolean(settings.getMockBattery().readDraw() > 0).toString());

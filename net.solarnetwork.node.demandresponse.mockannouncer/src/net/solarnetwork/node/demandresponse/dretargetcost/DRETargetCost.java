@@ -47,7 +47,6 @@ public class DRETargetCost {
 		// the reason the mapping should be in String String is because perhapes
 		// in the future it could be JSON
 		Map<FeedbackInstructionHandler, Map<String, ?>> instructionMap = new HashMap<FeedbackInstructionHandler, Map<String, ?>>();
-
 		for (FeedbackInstructionHandler handler : feedbackInstructionHandlers) {
 
 			if (handler.handlesTopic(DRSupportTools.DRPARAMS_INSTRUCTION)) {
@@ -61,7 +60,7 @@ public class DRETargetCost {
 
 				Map<String, ?> test = handler.processInstructionWithFeedback(instr).getResultParameters();
 				if (test != null) {
-					test = handler.processInstructionWithFeedback(instr).getResultParameters();
+
 					if (DRSupportTools.isDRCapable(test) && !DRSupportTools.isChargeable(test)) {
 
 						drdevices.add(handler);
@@ -90,8 +89,7 @@ public class DRETargetCost {
 			energyConsumption += wattValue;
 		}
 
-		Integer gridEnergy = energyConsumption - energyProduction;
-		Double newPrice = settings.getEnergyCost() * (double) gridEnergy / energyConsumption;
+		Double newPrice = settings.getEnergyCost().doubleValue();
 
 		// need an object array cause I want to relate double with drdevice
 		// the reason im not using mapping is multiple drdevices could have the
@@ -128,7 +126,6 @@ public class DRETargetCost {
 			}
 
 		});
-
 		// if this is true we need to reduce demand to get costs down
 		if (totalCost > settings.getDrtargetCost()) {
 
@@ -175,7 +172,7 @@ public class DRETargetCost {
 
 			// if true we need to increase demand
 		} else if (totalCost < settings.getDrtargetCost()) {
-
+			System.out.println("Debug should be here");
 			// this time we start with the cheapest devices (my reasoning is
 			// that these devices most likely have room to power on more) so we
 			// can acheive nessisary requirements with little number of

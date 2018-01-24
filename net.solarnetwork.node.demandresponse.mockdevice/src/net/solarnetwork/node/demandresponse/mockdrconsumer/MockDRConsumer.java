@@ -92,11 +92,12 @@ public class MockDRConsumer extends SimpleManagedTriggerAndJobDetail implements 
 				state = InstructionState.Completed;
 
 				// put values in the parameter map
-				map.put(DRSupportTools.DRCAPABLE_PARAM, "true");
+				map.put(DRSupportTools.DRREADY_PARAM, "true");
 				map.put(DRSupportTools.WATTS_PARAM, settings.getWatts().toString());
 				map.put(DRSupportTools.ENERGY_DEPRECIATION, settings.getEnergycost().toString());
 				map.put(DRSupportTools.MINWATTS_PARAM, settings.getMinwatts().toString());
 				map.put(DRSupportTools.MAXWATTS_PARAM, settings.getMaxwatts().toString());
+				map.put(DRSupportTools.SOURCEID_PARAM, settings.getUID());
 			}
 
 			InstructionStatus status = new BasicInstructionStatus(instruction.getId(), state, new Date(), null, map);

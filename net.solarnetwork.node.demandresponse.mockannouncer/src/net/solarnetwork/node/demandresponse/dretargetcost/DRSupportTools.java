@@ -51,7 +51,7 @@ import java.util.Map;
  * ENERGY_DEPRECIATION = The cost of running this device per watt hour. This
  * cost can reflect a resource consumption or simply deprecation from use.
  * 
- * DRCAPABLE_PARAM = setting this parameter to "true" tells the DREngine that it
+ * DRREADY_PARAM = setting this parameter to "true" tells the DREngine that it
  * can expect all of these above parameters in this map. Set it to "false" when
  * the device is not ready to handle demand response at that time.
  * 
@@ -99,9 +99,19 @@ public class DRSupportTools {
 	public static final String MAXWATTS_PARAM = "maxwatts";
 	public static final String MINWATTS_PARAM = "minwatts";
 	public static final String ENERGY_DEPRECIATION = "energycost";
-	public static final String DRCAPABLE_PARAM = "drcapable";
+	public static final String DRREADY_PARAM = "drready";
 	public static final String CHARGEABLE_PARAM = "chargeable";
 	public static final String DISCHARGING_PARAM = "isDischarging";
+	public static final String SOURCEID_PARAM = "sourceID";
+
+	public static String readSourceID(Map<String, ?> params) {
+		try {
+			return (String) params.get(SOURCEID_PARAM);
+		} catch (ClassCastException e) {
+			return null;
+		}
+
+	}
 
 	/**
 	 * Reads the wattage reading from the parameters. If there is no wattage
@@ -165,7 +175,7 @@ public class DRSupportTools {
 	 * @return
 	 */
 	public static boolean isDRCapable(Map<String, ?> params) {
-		return readBoolean("drcapable", params);
+		return readBoolean(DRREADY_PARAM, params);
 	}
 
 	/**
