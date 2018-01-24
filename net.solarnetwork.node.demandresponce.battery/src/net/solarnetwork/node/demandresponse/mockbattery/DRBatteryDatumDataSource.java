@@ -9,6 +9,7 @@ import net.solarnetwork.node.domain.GeneralNodeEnergyStorageDatum;
 import net.solarnetwork.node.settings.SettingSpecifier;
 import net.solarnetwork.node.settings.SettingSpecifierProvider;
 import net.solarnetwork.node.settings.support.BasicTextFieldSettingSpecifier;
+import net.solarnetwork.node.settings.support.BasicTitleSettingSpecifier;
 import net.solarnetwork.node.support.DatumDataSourceSupport;
 import net.solarnetwork.util.OptionalServiceCollection;
 
@@ -120,6 +121,7 @@ public class DRBatteryDatumDataSource extends DatumDataSourceSupport
 		results.add(new BasicTextFieldSettingSpecifier("batteryCharge", defaults.charge.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCost", defaults.cost.toString()));
 		results.add(new BasicTextFieldSettingSpecifier("batteryCycles", defaults.cycles.toString()));
+		results.add(new BasicTitleSettingSpecifier("energyCost", calcCost(), true));
 		results.add(new BasicTextFieldSettingSpecifier("drEngineName", defaults.drEngineName));
 		return results;
 	}
@@ -182,6 +184,12 @@ public class DRBatteryDatumDataSource extends DatumDataSourceSupport
 
 	public void setBatteryCycles(Integer cycles) {
 		this.cycles = cycles;
+	}
+
+	public String calcCost() {
+		return new Double(
+				(getBatteryCost().doubleValue() / (getBatteryCycles().doubleValue() * getBatteryMaxCharge() * 2.0)))
+						.toString();
 	}
 
 }
